@@ -8,6 +8,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+//Cookies
+import cookieParser from "cookie-parser";
+
+app.use(cookieParser());
+
 //CORS
 import cors from "cors";
 import { corsOptions } from "./constants/cors.constant";
