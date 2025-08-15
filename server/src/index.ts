@@ -4,11 +4,17 @@ import { env } from "./env";
 import { log } from "./logger";
 import app from "./app";
 import { connectDb } from "./db";
+import { Server } from "socket.io";
+import { io } from "./socket";
 
-async function main(app: Application) {
+async function main(app: Application, socketServer?: Server) {
   await connectDb(env.MONGO_URI);
 
   const server = http.createServer(app);
+
+  socketServer?.attach(server);
+
+  app.set("io", socketServer);
 
   server
     .listen(env.PORT)
@@ -20,4 +26,4 @@ async function main(app: Application) {
     });
 }
 
-main(app);
+main(app, io);
