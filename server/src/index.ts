@@ -5,7 +5,7 @@ import { log } from "./logger";
 import app from "./app";
 import { connectDb } from "./db";
 import { Server } from "socket.io";
-import { io } from "./socket";
+import { io } from "./app/socket";
 
 async function main(app: Application, socketServer?: Server) {
   await connectDb(env.MONGO_URI);
