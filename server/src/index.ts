@@ -3,8 +3,11 @@ import { Application } from "express";
 import { env } from "./env";
 import { log } from "./logger";
 import app from "./app";
+import { connectDb } from "./db";
 
-function main(app: Application) {
+async function main(app: Application) {
+  await connectDb(env.MONGO_URI);
+
   const server = http.createServer(app);
 
   server
