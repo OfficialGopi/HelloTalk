@@ -1,7 +1,6 @@
-export const getSockets = (
-  users: string[] = [],
-  userSocketIDs: Map<string, string>,
-): string[] => {
+import { userSocketIDs } from ".";
+
+export const getSockets = (users: string[] = []): string[] => {
   const sockets = users.map((user) => {
     const socketID = userSocketIDs.get(user);
 
