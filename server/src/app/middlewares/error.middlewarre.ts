@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { ApiError } from "../utils/response.util";
+import { ApiError } from "../utils/response-formatter.util";
 
 function errorMiddleware(
   error: ApiError,

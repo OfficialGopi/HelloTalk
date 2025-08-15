@@ -10,14 +10,14 @@ app.use(express.static("public"));
 
 //CORS
 import cors from "cors";
-import { corsOptions } from "./constants/cors.constants";
+import { corsOptions } from "./constants/cors.constant";
 
 app.use(cors(corsOptions));
 
 //Apis
-import userRouter from "./routes/user.routes";
-import chatRouter from "./routes/chat.routes";
-import adminRouter from "./routes/admin.routes";
+import userRouter from "./routes/user.route";
+import chatRouter from "./routes/chat.route";
+import adminRouter from "./routes/admin.route";
 
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/chat", chatRouter);
