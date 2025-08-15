@@ -4,4 +4,9 @@ const cookieOptions = {
   secure: true,
 };
 
-export { cookieOptions };
+const tokenFieldNames = {
+  accessToken: "access-token",
+  refreshToken: "refresh-token",
+};
+
+export { cookieOptions, tokenFieldNames };
