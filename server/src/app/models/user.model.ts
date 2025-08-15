@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { IUser } from "../types/schemas.types";
+import { USER_ROLES, USER_ROLES_ENUM } from "../constants/roles.constant";
 
 const schema = new mongoose.Schema<IUser & mongoose.Document>(
   {
@@ -12,6 +13,11 @@ const schema = new mongoose.Schema<IUser & mongoose.Document>(
       type: String,
       required: true,
       unique: true,
+    },
+    role: {
+      type: String,
+      enum: USER_ROLES_ENUM,
+      default: USER_ROLES.USER,
     },
 
     bio: {
