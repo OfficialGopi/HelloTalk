@@ -8,7 +8,7 @@ import {
   getAdminData,
   getDashboardStats,
 } from "../controllers/admin.controller";
-import { isAdmin } from "../middlewares/rbac.middleware";
+import { isAdmin } from "../middlewares/auth.middleware";
 
 const adminRouter = express.Router();
 adminRouter.post("/verify", adminLogin);

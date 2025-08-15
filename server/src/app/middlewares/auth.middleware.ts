@@ -6,4 +6,8 @@ const checkUserIfLoggedIn = AsyncHandler(async (req, res, next) => {
   next();
 });
 
-export { checkUserIfLoggedIn };
+const isAdmin = AsyncHandler(async (req, res, next) => {
+  //TODO
+});
+
+export { checkUserIfLoggedIn, isAdmin };
