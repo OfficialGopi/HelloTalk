@@ -65,13 +65,27 @@ const getMyChats = AsyncHandler(async (req, res) => {
     };
   });
 
-  return res.status(200).json({
-    success: true,
-    chats: transformedChats,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, transformedChats, "Success"));
 });
 const getMyGroups = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const chats = await ChatModel.find({
+    members: req.user,
+    groupChat: true,
+    creator: req.user,
+  }).populate("members", "name avatar");
+
+  const groups = chats.map(({ members, _id, groupChat, name }) => ({
+    _id,
+    groupChat,
+    name,
+    avatar: members
+      .slice(0, 3)
+      .map(({ avatar }: { avatar: { url: string } }) => avatar.url),
+  }));
+
+  return res.status(200).json(new ApiResponse(200, groups, "Success"));
 });
 const addMembers = AsyncHandler(async (req, res, next) => {
   //TODO
