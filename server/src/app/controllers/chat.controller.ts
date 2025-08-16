@@ -131,7 +131,39 @@ const addMembers = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const removeMember = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { userId, chatId } = req.body;
+
+  const [chat, userThatWillBeRemoved] = await Promise.all([
+    ChatModel.findById(chatId),
+    UserModel.findById(userId, "name"),
+  ]);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  if (!chat.groupChat) throw new ApiError(400, "This is not a group chat");
+
+  if (chat.creator.toString() !== req.user!._id!.toString())
+    throw new ApiError(403, "You are not allowed to add members");
+
+  if (chat.members.length <= 3)
+    throw new ApiError(400, "Group must have at least 3 members");
+
+  const allChatMembers = chat.members.map((i: string) => i.toString());
+
+  chat.members = chat.members.filter(
+    (member: string) => member.toString() !== userId.toString(),
+  );
+
+  await chat.save();
+
+  emitEvent(req, ALERT, chat.members, {
+    message: `${userThatWillBeRemoved.name} has been removed from the group`,
+    chatId,
+  });
+
+  emitEvent(req, REFETCH_CHATS, allChatMembers);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const leaveGroup = AsyncHandler(async (req, res, next) => {
   //TODO
