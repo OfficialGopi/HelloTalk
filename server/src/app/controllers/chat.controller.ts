@@ -316,22 +316,34 @@ const getChatDetails = AsyncHandler(async (req, res, next) => {
       }),
     );
 
-    return res.status(200).json({
-      success: true,
-      chat,
-    });
+    return res.status(200).json(new ApiResponse(200, chat, "Success"));
   } else {
     const chat = await ChatModel.findById(req.params.id);
     if (!chat) throw new ApiError(404, "Chat not found");
 
-    return res.status(200).json({
-      success: true,
-      chat,
-    });
+    return res.status(200).json(new ApiResponse(200, chat, "Success"));
   }
 });
 const renameGroup = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const chatId = req.params.id;
+  const { name } = req.body;
+
+  const chat = await ChatModel.findById(chatId);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  if (!chat.groupChat) throw new ApiError(400, "This is not a group chat");
+
+  if (chat.creator.toString() !== req.user!._id!.toString())
+    throw new ApiError(403, "You are not allowed to rename the group");
+
+  chat.name = name;
+
+  await chat.save();
+
+  emitEvent(req, REFETCH_CHATS, chat.members);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const deleteChat = AsyncHandler(async (req, res, next) => {
   //TODO
