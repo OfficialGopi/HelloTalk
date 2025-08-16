@@ -166,7 +166,43 @@ const removeMember = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const leaveGroup = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const chatId = req.params.id;
+
+  const chat = await ChatModel.findById(chatId);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  if (!chat.groupChat) throw new ApiError(400, "This is not a group chat");
+
+  const remainingMembers = chat.members.filter(
+    (member: string) => member.toString() !== req.user!._id!.toString(),
+  );
+
+  if (remainingMembers.length < 3)
+    throw new ApiError(404, "Group must have at least 3 members");
+
+  if (chat.creator.toString() === req.user!._id!.toString()) {
+    const randomElement = Math.floor(Math.random() * remainingMembers.length);
+    const newCreator = remainingMembers[randomElement];
+    chat.creator = newCreator;
+  }
+
+  chat.members = remainingMembers;
+
+  const [user] = await Promise.all([
+    UserModel.findById(req.user!._id!, "name"),
+    chat.save(),
+  ]);
+
+  emitEvent(req, ALERT, chat.members, {
+    chatId,
+    message: `User ${user.name} has left the group`,
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: "Leave Group Successfully",
+  });
 });
 const sendAttachments = AsyncHandler(async (req, res, next) => {
   //TODO
