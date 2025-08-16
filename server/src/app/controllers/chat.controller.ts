@@ -5,6 +5,8 @@ import { emitEvent, getOtherMember } from "../utils/socket.util";
 import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { IUser } from "../types/schemas.types";
 import { UserModel } from "../models/user.model";
+import { MessageModel } from "../models/message.model";
+import { uploadOnCloudinary } from "../libs/cloudinary.lib";
 
 const {
   ALERT,
@@ -205,7 +207,58 @@ const leaveGroup = AsyncHandler(async (req, res, next) => {
   });
 });
 const sendAttachments = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { chatId } = req.body;
+
+  const files = (req.files || []) as Express.Multer.File[];
+
+  if (files.length < 1) throw new ApiError(400, "Please Upload Attachments");
+
+  if (files.length > 5) throw new ApiError(400, "Files Can't be more than 5");
+
+  const [chat, me] = await Promise.all([
+    ChatModel.findById(chatId),
+    UserModel.findById(req.user!._id!, "name"),
+  ]);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  if (files.length < 1) throw new ApiError(400, "Please provide attachments");
+
+  //   Upload files here
+  let attachments: { public_id: string; url: string }[] = [];
+
+  for (const file of files) {
+    const response = await uploadOnCloudinary(file.path);
+    if (response) attachments.push(response);
+  }
+
+  if (attachments.length < 1) throw new ApiError(500, "Failed to upload files");
+
+  const messageForDB = {
+    content: "",
+    attachments,
+    sender: me._id,
+    chat: chatId,
+  };
+
+  const messageForRealTime = {
+    ...messageForDB,
+    sender: {
+      _id: me._id,
+      name: me.name,
+    },
+  };
+
+  const message = await MessageModel.create(messageForDB);
+
+  emitEvent(req, NEW_MESSAGE, chat.members, {
+    message: messageForRealTime,
+    chatId,
+  });
+
+  emitEvent(req, NEW_MESSAGE_ALERT, chat.members, { chatId });
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const getMessages = AsyncHandler(async (req, res, next) => {
   //TODO
