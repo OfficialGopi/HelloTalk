@@ -6,7 +6,10 @@ import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { IUser } from "../types/schemas.types";
 import { UserModel } from "../models/user.model";
 import { MessageModel } from "../models/message.model";
-import { uploadOnCloudinary } from "../libs/cloudinary.lib";
+import {
+  deletFileFromCloudinary,
+  uploadOnCloudinary,
+} from "../libs/cloudinary.lib";
 
 const {
   ALERT,
@@ -346,7 +349,46 @@ const renameGroup = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const deleteChat = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const chatId = req.params.id;
+
+  const chat = await ChatModel.findById(chatId);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  const members = chat.members;
+
+  if (chat.groupChat && chat.creator.toString() !== req.user!._id!.toString())
+    throw new ApiError(403, "You are not allowed to delete the group");
+
+  if (!chat.groupChat && !chat.members.includes(req.user!._id!.toString())) {
+    throw new ApiError(403, "You are not allowed to delete the chat");
+  }
+
+  //   Here we have to dete All Messages as well as attachments or files from cloudinary
+
+  const messagesWithAttachments = await MessageModel.find({
+    chat: chatId,
+    attachments: { $exists: true, $ne: [] },
+  });
+
+  const public_ids: string[] = [];
+
+  messagesWithAttachments.forEach(({ attachments }) =>
+    attachments.forEach(({ public_id }: { public_id: string }) =>
+      public_ids.push(public_id),
+    ),
+  );
+
+  for (let i = 0; i < public_ids.length; i++) {
+    await deletFileFromCloudinary(public_ids[i]);
+  }
+
+  await chat.deleteOne();
+  await MessageModel.deleteMany({ chat: chatId });
+
+  emitEvent(req, REFETCH_CHATS, members);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 
 export {
