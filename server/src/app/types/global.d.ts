@@ -1,5 +1,6 @@
 // types/global.d.ts
 import { IncomingMessage } from "http";
+import { IUser } from "./schemas.types";
 
 declare module "http" {
   interface IncomingMessage {
@@ -13,5 +14,11 @@ declare module "socket.io" {
       _id: string;
       name: string;
     };
+  }
+}
+
+declare module "express" {
+  interface Request {
+    user?: Partial<IUser>;
   }
 }
