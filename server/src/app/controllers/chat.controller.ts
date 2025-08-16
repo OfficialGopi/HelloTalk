@@ -293,7 +293,42 @@ const getMessages = AsyncHandler(async (req, res, next) => {
   });
 });
 const getChatDetails = AsyncHandler(async (req, res, next) => {
-  //TODO
+  if (req.query.populate === "true") {
+    const chat: any = await ChatModel.findById(req.params.id)
+      .populate("members", "name avatar")
+      .lean();
+
+    if (!chat) throw new ApiError(404, "Chat not found");
+
+    chat.members = chat.members.map(
+      ({
+        _id,
+        name,
+        avatar,
+      }: {
+        _id: string;
+        name: string;
+        avatar: { url: string };
+      }) => ({
+        _id,
+        name,
+        avatar: avatar.url,
+      }),
+    );
+
+    return res.status(200).json({
+      success: true,
+      chat,
+    });
+  } else {
+    const chat = await ChatModel.findById(req.params.id);
+    if (!chat) throw new ApiError(404, "Chat not found");
+
+    return res.status(200).json({
+      success: true,
+      chat,
+    });
+  }
 });
 const renameGroup = AsyncHandler(async (req, res, next) => {
   //TODO
