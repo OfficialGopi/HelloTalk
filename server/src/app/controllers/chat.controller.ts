@@ -2,8 +2,9 @@ import { events } from "../constants/events.constant";
 import { ChatModel } from "../models/chat.model";
 import { AsyncHandler } from "../utils/async-handler.util";
 import { emitEvent, getOtherMember } from "../utils/socket.util";
-import { ApiResponse } from "../utils/response-formatter.util";
+import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { IUser } from "../types/schemas.types";
+import { UserModel } from "../models/user.model";
 
 const {
   ALERT,
@@ -22,12 +23,12 @@ const {
 const newGroupChat = AsyncHandler(async (req, res) => {
   const { name, members } = req.body;
 
-  const allMembers = [...members, req.user];
+  const allMembers = [...members, req.user!._id];
 
   await ChatModel.create({
     name,
     groupChat: true,
-    creator: req.user,
+    creator: req.user!._id,
     members: allMembers,
   });
 
@@ -39,7 +40,7 @@ const newGroupChat = AsyncHandler(async (req, res) => {
     .json(new ApiResponse(201, {}, "Chat created successfully"));
 });
 const getMyChats = AsyncHandler(async (req, res) => {
-  const chats = await ChatModel.find({ members: req.user }).populate(
+  const chats = await ChatModel.find({ members: req.user!._id }).populate(
     "members",
     "name avatar",
   );
@@ -71,9 +72,9 @@ const getMyChats = AsyncHandler(async (req, res) => {
 });
 const getMyGroups = AsyncHandler(async (req, res, next) => {
   const chats = await ChatModel.find({
-    members: req.user,
+    members: req.user!._id,
     groupChat: true,
-    creator: req.user,
+    creator: req.user!._id,
   }).populate("members", "name avatar");
 
   const groups = chats.map(({ members, _id, groupChat, name }) => ({
@@ -88,7 +89,46 @@ const getMyGroups = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, groups, "Success"));
 });
 const addMembers = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { chatId, members } = req.body;
+
+  const chat = await ChatModel.findById(chatId);
+
+  if (!chat) throw new ApiError(404, "Chat not found");
+
+  if (!chat.groupChat) throw new ApiError(400, "This is not a group chat");
+
+  if (chat.creator.toString() !== req.user!._id!.toString())
+    throw new ApiError(403, "You are not allowed to add members");
+
+  const allNewMembersPromise = members.map((i: string) =>
+    UserModel.findById(i, "name"),
+  );
+
+  const allNewMembers = await Promise.all(allNewMembersPromise);
+
+  const uniqueMembers = allNewMembers
+    .filter((i) => !chat.members.includes(i._id.toString()))
+    .map((i) => i._id);
+
+  chat.members.push(...uniqueMembers);
+
+  if (chat.members.length > 100)
+    throw new ApiError(400, "Group members limit reached");
+
+  await chat.save();
+
+  const allUsersName = allNewMembers.map((i) => i.name).join(", ");
+
+  emitEvent(
+    req,
+    ALERT,
+    chat.members,
+    `${allUsersName} has been added in the group`,
+  );
+
+  emitEvent(req, REFETCH_CHATS, chat.members);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const removeMember = AsyncHandler(async (req, res, next) => {
   //TODO
