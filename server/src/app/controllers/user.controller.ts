@@ -1,5 +1,6 @@
 import { tokenFieldNames } from "../constants/cookie.constant";
 import { uploadOnCloudinary } from "../libs/cloudinary.lib";
+import { ChatModel } from "../models/chat.model";
 import { UserModel } from "../models/user.model";
 import { sanitizeUser } from "../services/model.service";
 import { AsyncHandler } from "../utils/async-handler.util";
@@ -61,7 +62,28 @@ const logout = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, {}, "Success"));
 });
 const searchUser = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { name = "" } = req.query;
+
+  // Finding All my chats
+  const myChats = await ChatModel.find({ groupChat: false, members: req.user });
+
+  //  extracting All Users from my chats means friends or people I have chatted with
+  const allUsersFromMyChats = myChats.flatMap((chat) => chat.members);
+
+  // Finding all users except me and my friends
+  const allUsersExceptMeAndFriends = await UserModel.find({
+    _id: { $nin: allUsersFromMyChats },
+    name: { $regex: name, $options: "i" },
+  });
+
+  // Modifying the response
+  const users = allUsersExceptMeAndFriends.map(({ _id, name, avatar }) => ({
+    _id,
+    name,
+    avatar: avatar?.url,
+  }));
+
+  return res.status(200).json(new ApiResponse(200, users, "Success"));
 });
 const sendFriendRequest = AsyncHandler(async (req, res, next) => {
   //TODO
