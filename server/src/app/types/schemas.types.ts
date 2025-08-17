@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
-import { USER_ROLES_ENUM } from "../constants/roles.constant";
 
 interface IUser {
   _id: mongoose.Schema.Types.ObjectId;
   name: string;
-  role: (typeof USER_ROLES_ENUM)[number];
   email: string;
   bio: string;
   username: string;
