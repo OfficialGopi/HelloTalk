@@ -27,7 +27,10 @@ const adminLogin = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, {}, "Success"));
 });
 const adminLogout = AsyncHandler(async (req, res, next) => {
-  //TODO
+  return res
+    .status(200)
+    .clearCookie(tokenFieldNames.adminToken)
+    .json(new ApiResponse(200, {}, "Success"));
 });
 const getAdminData = AsyncHandler(async (req, res, next) => {
   //TODO
