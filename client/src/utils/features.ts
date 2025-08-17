@@ -1,3 +1,4 @@
+import { isValidUsername } from "6pp";
 const getOrSaveFromStorage = ({
   key,
   value,
@@ -14,4 +15,33 @@ const getOrSaveFromStorage = ({
   else localStorage.setItem(key, JSON.stringify(value));
 };
 
-export { getOrSaveFromStorage };
+const usernameValidator = (username: string) => {
+  if (!isValidUsername(username))
+    return { isValid: false, errorMessage: "Username is Invalid" };
+};
+
+const transformImage = (url = "", width = 100) => {
+  const newUrl = url.replace("upload/", `upload/dpr_auto/w_${width}/`);
+
+  return newUrl;
+};
+
+const fileFormat = (url = "") => {
+  const fileExt = url.split(".").pop();
+
+  if (fileExt === "mp4" || fileExt === "webm" || fileExt === "ogg")
+    return "video";
+
+  if (fileExt === "mp3" || fileExt === "wav") return "audio";
+  if (
+    fileExt === "png" ||
+    fileExt === "jpg" ||
+    fileExt === "jpeg" ||
+    fileExt === "gif"
+  )
+    return "image";
+
+  return "file";
+};
+
+export { fileFormat, getOrSaveFromStorage, usernameValidator, transformImage };
