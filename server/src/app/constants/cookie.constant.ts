@@ -7,6 +7,8 @@ const cookieOptions = {
 const tokenFieldNames = {
   accessToken: "access-token",
   refreshToken: "refresh-token",
+  adminAccessToken: "admin-access-token",
+  adminRefreshToken: "admin-refresh-token",
 };
 
 export { cookieOptions, tokenFieldNames };
