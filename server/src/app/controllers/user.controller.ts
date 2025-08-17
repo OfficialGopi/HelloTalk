@@ -1,7 +1,9 @@
+import { tokenFieldNames } from "../constants/cookie.constant";
 import { uploadOnCloudinary } from "../libs/cloudinary.lib";
 import { UserModel } from "../models/user.model";
+import { sanitizeUser } from "../services/model.service";
 import { AsyncHandler } from "../utils/async-handler.util";
-import { ApiError } from "../utils/response-formatter.util";
+import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { sendToken } from "../utils/sendToken.util";
 
 const signup = AsyncHandler(async (req, res, next) => {
@@ -46,10 +48,17 @@ const login = AsyncHandler(async (req, res, next) => {
   sendToken(res, user, 200, `Welcome Back, ${user.name}`);
 });
 const getUserProfile = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const user = await UserModel.findById(req.user);
+
+  if (!user) throw new ApiError(404, "User not found");
+
+  res.status(200).json(new ApiResponse(200, sanitizeUser(user), "Success"));
 });
 const logout = AsyncHandler(async (req, res, next) => {
-  //TODO
+  return res
+    .status(200)
+    .clearCookie(tokenFieldNames.userToken)
+    .json(new ApiResponse(200, {}, "Success"));
 });
 const searchUser = AsyncHandler(async (req, res, next) => {
   //TODO
