@@ -140,7 +140,46 @@ const allMessages = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, transformedMessages, "Success"));
 });
 const getDashboardStats = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const [groupsCount, usersCount, messagesCount, totalChatsCount] =
+    await Promise.all([
+      ChatModel.countDocuments({ groupChat: true }),
+      UserModel.countDocuments(),
+      MessageModel.countDocuments(),
+      ChatModel.countDocuments(),
+    ]);
+
+  const today = new Date();
+
+  const last7Days = new Date();
+  last7Days.setDate(last7Days.getDate() - 7);
+
+  const last7DaysMessages = await MessageModel.find({
+    createdAt: {
+      $gte: last7Days,
+      $lte: today,
+    },
+  }).select("createdAt");
+
+  const messages = new Array(7).fill(0);
+  const dayInMiliseconds = 1000 * 60 * 60 * 24;
+
+  last7DaysMessages.forEach((message) => {
+    const indexApprox =
+      (today.getTime() - message.createdAt.getTime()) / dayInMiliseconds;
+    const index = Math.floor(indexApprox);
+
+    messages[6 - index]++;
+  });
+
+  const stats = {
+    groupsCount,
+    usersCount,
+    messagesCount,
+    totalChatsCount,
+    messagesChart: messages,
+  };
+
+  return res.status(200).json(new ApiResponse(200, stats, "Success"));
 });
 
 export {
