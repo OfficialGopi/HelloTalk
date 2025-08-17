@@ -130,10 +130,9 @@ const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
   if (!accept) {
     await request.deleteOne();
 
-    return res.status(200).json({
-      success: true,
-      message: "Friend Request Rejected",
-    });
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Friend request rejected"));
   }
   const members = [request.sender._id, request.receiver._id];
 
@@ -147,15 +146,9 @@ const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
 
   emitEvent(req, REFETCH_CHATS, members);
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      {
-        senderId: request.sender._id,
-      },
-      "Success",
-    ),
-  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, request.sender._id, "Success"));
 });
 
 const getMyNotifications = AsyncHandler(async (req, res, next) => {
