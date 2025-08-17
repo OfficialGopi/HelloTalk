@@ -33,7 +33,15 @@ const adminLogout = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, {}, "Success"));
 });
 const getAdminData = AsyncHandler(async (req, res, next) => {
-  //TODO
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        admin: true,
+      },
+      "Success",
+    ),
+  );
 });
 const allUsers = AsyncHandler(async (req, res, next) => {
   //TODO
