@@ -10,7 +10,7 @@ import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { sendToken } from "../utils/sendToken.util";
 import { emitEvent } from "../utils/socket.util";
 
-const { NEW_REQUEST } = events;
+const { NEW_REQUEST, REFETCH_CHATS } = events;
 
 const signup = AsyncHandler(async (req, res, next) => {
   const { name, username, password, bio } = req.body;
@@ -135,6 +135,27 @@ const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
       message: "Friend Request Rejected",
     });
   }
+  const members = [request.sender._id, request.receiver._id];
+
+  await Promise.all([
+    ChatModel.create({
+      members,
+      name: `${request.sender.name}-${request.receiver.name}`,
+    }),
+    request.deleteOne(),
+  ]);
+
+  emitEvent(req, REFETCH_CHATS, members);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        senderId: request.sender._id,
+      },
+      "Success",
+    ),
+  );
 });
 
 const getMyNotifications = AsyncHandler(async (req, res, next) => {
