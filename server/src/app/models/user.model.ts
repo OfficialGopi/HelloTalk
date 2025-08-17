@@ -4,7 +4,11 @@ import { IUser } from "../types/schemas.types";
 import jwt, { SignOptions } from "jsonwebtoken";
 import { env } from "../../env";
 
-const schema = new mongoose.Schema<IUser & mongoose.Document>(
+const schema = new mongoose.Schema<
+  IUser & {
+    comparePassword: (password: string) => Promise<boolean>;
+  } & mongoose.Document
+>(
   {
     name: {
       type: String,
@@ -59,5 +63,13 @@ schema.methods.generateUserToken = function () {
 };
 
 export const UserModel =
-  mongoose.models.User ||
-  mongoose.model<IUser & mongoose.Document>("users", schema);
+  (mongoose.models.User as mongoose.Model<
+    IUser & {
+      comparePassword: (password: string) => Promise<boolean>;
+    } & mongoose.Document
+  >) ||
+  mongoose.model<
+    IUser & {
+      comparePassword: (password: string) => Promise<boolean>;
+    } & mongoose.Document
+  >("users", schema);

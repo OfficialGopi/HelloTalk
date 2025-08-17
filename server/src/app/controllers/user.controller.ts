@@ -33,7 +33,17 @@ const signup = AsyncHandler(async (req, res, next) => {
   sendToken(res, user, 201, "User created");
 });
 const login = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { username, password } = req.body;
+
+  const user = await UserModel.findOne({ username }).select("+password");
+
+  if (!user) throw new ApiError(404, "Invalid Username or Password");
+
+  const isMatch = await user.comparePassword(password);
+
+  if (!isMatch) throw new ApiError(404, "Invalid Username or Password");
+
+  sendToken(res, user, 200, `Welcome Back, ${user.name}`);
 });
 const getUserProfile = AsyncHandler(async (req, res, next) => {
   //TODO
