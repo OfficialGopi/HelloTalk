@@ -115,7 +115,29 @@ const allChats = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, transformedChats, "Success"));
 });
 const allMessages = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const messages = await MessageModel.find({})
+    .populate("sender", "name avatar")
+    .populate("chat", "groupChat");
+
+  const transformedMessages = messages.map(
+    ({ content, attachments, _id, sender, createdAt, chat }) => ({
+      _id,
+      attachments,
+      content,
+      createdAt,
+      chat: chat._id,
+      groupChat: chat.groupChat,
+      sender: {
+        _id: sender._id,
+        name: sender.name,
+        avatar: sender.avatar.url,
+      },
+    }),
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, transformedMessages, "Success"));
 });
 const getDashboardStats = AsyncHandler(async (req, res, next) => {
   //TODO
