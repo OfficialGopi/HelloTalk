@@ -52,15 +52,9 @@ schema.pre("save", async function (next) {
 schema.methods.comparePassword = async function (password: string) {
   return await bcrypt.compare(password, this.password);
 };
-schema.methods.generateAccessToken = function () {
-  return jwt.sign({ _id: this._id }, env.ACCESS_TOKEN_SECRET, {
-    expiresIn: env.ACCESS_TOKEN_EXPIRY,
-  } as SignOptions);
-};
-
-schema.methods.generateRefreshToken = async function () {
-  return jwt.sign({ _id: this._id }, env.REFRESH_TOKEN_SECRET, {
-    expiresIn: env.REFRESH_TOKEN_EXPIRY,
+schema.methods.generateUserToken = function () {
+  return jwt.sign({ _id: this._id }, env.USER_TOKEN_SECRET, {
+    expiresIn: env.USER_TOKEN_EXPIRY,
   } as SignOptions);
 };
 
