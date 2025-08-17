@@ -162,7 +162,7 @@ const removeMember = AsyncHandler(async (req, res, next) => {
   await chat.save();
 
   emitEvent(req, ALERT, chat.members, {
-    message: `${userThatWillBeRemoved.name} has been removed from the group`,
+    message: `${userThatWillBeRemoved?.name} has been removed from the group`,
     chatId,
   });
 
@@ -201,7 +201,7 @@ const leaveGroup = AsyncHandler(async (req, res, next) => {
 
   emitEvent(req, ALERT, chat.members, {
     chatId,
-    message: `User ${user.name} has left the group`,
+    message: `User ${user?.name} has left the group`,
   });
 
   return res.status(200).json({
@@ -240,15 +240,15 @@ const sendAttachments = AsyncHandler(async (req, res, next) => {
   const messageForDB = {
     content: "",
     attachments,
-    sender: me._id,
+    sender: me?._id,
     chat: chatId,
   };
 
   const messageForRealTime = {
     ...messageForDB,
     sender: {
-      _id: me._id,
-      name: me.name,
+      _id: me?._id,
+      name: me?.name,
     },
   };
 
