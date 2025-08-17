@@ -15,7 +15,7 @@ import { checkUserIfLoggedIn } from "../middlewares/auth.middleware";
 
 const userRouter = express.Router();
 
-userRouter.post("/signup", uploadSingleAvatar, signup);
+userRouter.post("/new", uploadSingleAvatar, signup);
 userRouter.post("/login", login);
 
 // User Must be authenticated
