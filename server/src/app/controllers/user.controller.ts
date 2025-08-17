@@ -8,7 +8,7 @@ import { sanitizeUser } from "../services/model.service";
 import { AsyncHandler } from "../utils/async-handler.util";
 import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { sendToken } from "../utils/sendToken.util";
-import { emitEvent } from "../utils/socket.util";
+import { emitEvent, getOtherMember } from "../utils/socket.util";
 
 const { NEW_REQUEST, REFETCH_CHATS } = events;
 
@@ -175,7 +175,36 @@ const getMyNotifications = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, allRequests, "Success"));
 });
 const getMyFriends = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const chatId = req.query.chatId;
+
+  const chats = await ChatModel.find({
+    members: req.user?._id,
+    groupChat: false,
+  }).populate("members", "name avatar");
+
+  const friends = chats.map(({ members }) => {
+    const otherUser = getOtherMember(members, req.user!);
+
+    return {
+      _id: otherUser?._id,
+      name: otherUser?.name,
+      avatar: otherUser?.avatar?.url,
+    };
+  });
+
+  if (chatId) {
+    const chat = await ChatModel.findById(chatId);
+
+    const availableFriends = friends.filter(
+      (friend) => !chat.members.includes(friend._id),
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, availableFriends, "Success"));
+  } else {
+    return res.status(200).json(new ApiResponse(200, friends, "Success"));
+  }
 });
 
 export {
