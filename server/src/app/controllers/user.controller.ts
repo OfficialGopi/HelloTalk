@@ -1,11 +1,16 @@
 import { tokenFieldNames } from "../constants/cookie.constant";
+import { events } from "../constants/events.constant";
 import { uploadOnCloudinary } from "../libs/cloudinary.lib";
 import { ChatModel } from "../models/chat.model";
+import { RequestModel } from "../models/request.model";
 import { UserModel } from "../models/user.model";
 import { sanitizeUser } from "../services/model.service";
 import { AsyncHandler } from "../utils/async-handler.util";
 import { ApiError, ApiResponse } from "../utils/response-formatter.util";
 import { sendToken } from "../utils/sendToken.util";
+import { emitEvent } from "../utils/socket.util";
+
+const { NEW_REQUEST } = events;
 
 const signup = AsyncHandler(async (req, res, next) => {
   const { name, username, password, bio } = req.body;
@@ -86,7 +91,25 @@ const searchUser = AsyncHandler(async (req, res, next) => {
   return res.status(200).json(new ApiResponse(200, users, "Success"));
 });
 const sendFriendRequest = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { userId } = req.body;
+
+  const request = await RequestModel.findOne({
+    $or: [
+      { sender: req.user, receiver: userId },
+      { sender: userId, receiver: req.user },
+    ],
+  });
+
+  if (request) throw new ApiError(400, "Request already sent");
+
+  await RequestModel.create({
+    sender: req.user,
+    receiver: userId,
+  });
+
+  emitEvent(req, NEW_REQUEST, [userId]);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 
 const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
