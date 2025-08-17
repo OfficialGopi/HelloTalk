@@ -26,19 +26,11 @@ class ApiError extends Error {
 
 class ApiResponse {
   public statusCode: number;
-  public data: {
-    [key: string]: any;
-  };
+  public data: any;
   public success: boolean;
   public message: string;
 
-  constructor(
-    statusCode: number,
-    data: {
-      [key: string]: any;
-    },
-    message: string = "Success",
-  ) {
+  constructor(statusCode: number, data: any, message: string = "Success") {
     this.statusCode = statusCode;
     this.data = data;
     this.message = message;
