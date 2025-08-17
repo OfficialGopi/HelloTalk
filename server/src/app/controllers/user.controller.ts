@@ -54,7 +54,7 @@ const login = AsyncHandler(async (req, res, next) => {
   sendToken(res, user, 200, `Welcome Back, ${user.name}`);
 });
 const getUserProfile = AsyncHandler(async (req, res, next) => {
-  const user = await UserModel.findById(req.user);
+  const user = await UserModel.findById(req.user?._id);
 
   if (!user) throw new ApiError(404, "User not found");
 
@@ -70,7 +70,10 @@ const searchUser = AsyncHandler(async (req, res, next) => {
   const { name = "" } = req.query;
 
   // Finding All my chats
-  const myChats = await ChatModel.find({ groupChat: false, members: req.user });
+  const myChats = await ChatModel.find({
+    groupChat: false,
+    members: req.user?._id,
+  });
 
   //  extracting All Users from my chats means friends or people I have chatted with
   const allUsersFromMyChats = myChats.flatMap((chat) => chat.members);
@@ -95,15 +98,15 @@ const sendFriendRequest = AsyncHandler(async (req, res, next) => {
 
   const request = await RequestModel.findOne({
     $or: [
-      { sender: req.user, receiver: userId },
-      { sender: userId, receiver: req.user },
+      { sender: req.user?._id, receiver: userId },
+      { sender: userId, receiver: req.user?._id },
     ],
   });
 
   if (request) throw new ApiError(400, "Request already sent");
 
   await RequestModel.create({
-    sender: req.user,
+    sender: req.user?._id,
     receiver: userId,
   });
 
@@ -113,8 +116,27 @@ const sendFriendRequest = AsyncHandler(async (req, res, next) => {
 });
 
 const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const { requestId, accept } = req.body;
+
+  const request = await RequestModel.findById(requestId)
+    .populate("sender", "name")
+    .populate("receiver", "name");
+
+  if (!request) throw new ApiError(404, "Request not found");
+
+  if (request.receiver._id.toString() !== req.user?._id?.toString())
+    throw new ApiError(401, "You are not authorized to accept this request");
+
+  if (!accept) {
+    await request.deleteOne();
+
+    return res.status(200).json({
+      success: true,
+      message: "Friend Request Rejected",
+    });
+  }
 });
+
 const getMyNotifications = AsyncHandler(async (req, res, next) => {
   //TODO
 });
