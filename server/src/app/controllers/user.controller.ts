@@ -159,7 +159,20 @@ const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
 });
 
 const getMyNotifications = AsyncHandler(async (req, res, next) => {
-  //TODO
+  const requests = await RequestModel.find({
+    receiver: req.user?._id,
+  }).populate("sender", "name avatar");
+
+  const allRequests = requests.map(({ _id, sender }) => ({
+    _id,
+    sender: {
+      _id: sender._id,
+      name: sender.name,
+      avatar: sender.avatar.url,
+    },
+  }));
+
+  return res.status(200).json(new ApiResponse(200, allRequests, "Success"));
 });
 const getMyFriends = AsyncHandler(async (req, res, next) => {
   //TODO
