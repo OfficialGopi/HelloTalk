@@ -14,12 +14,12 @@ const socketAuthenticator = async (
   try {
     if (err) throw new ApiError(401, "Please login to access this route", err);
 
-    const authToken = socket.request.cookies[tokenFieldNames.accessToken];
+    const authToken = socket.request.cookies[tokenFieldNames.userToken];
 
     if (!authToken)
       throw new ApiError(401, "Please login to access this route");
 
-    const decodedData: any = jwt.verify(authToken, env.ACCESS_TOKEN_SECRET);
+    const decodedData: any = jwt.verify(authToken, env.USER_TOKEN_SECRET);
 
     const user = await UserModel.findById(decodedData._id);
 
@@ -29,7 +29,7 @@ const socketAuthenticator = async (
 
     next();
   } catch (error) {
-    throw new ApiError(401, "Please login to access this route");
+    next(new ApiError(401, "Please login to access this route"));
   }
 };
 
