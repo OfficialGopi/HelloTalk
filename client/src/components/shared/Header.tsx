@@ -1,12 +1,10 @@
 import React, { Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { Search, Plus, Users, Bell, LogOut, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { server } from "../../constants/config";
 import { userNotExists } from "../../redux/reducers/auth";
 import {
   setIsMobile,
@@ -16,6 +14,7 @@ import {
 } from "../../redux/reducers/misc";
 import { resetNotificationCount } from "../../redux/reducers/chat";
 import ToggleThemeBtn from "./ToggleThemeBtn";
+import api from "@/utils/axiosInstace.util";
 
 // Lazy dialogs
 const SearchDialog = lazy(() => import("@/components/specific/Search.tsx"));
@@ -44,9 +43,7 @@ const Header = () => {
 
   const logoutHandler = async () => {
     try {
-      const { data } = await axios.get(`${server}/api/v1/user/logout`, {
-        withCredentials: true,
-      });
+      const { data } = await api.get(`/user/logout`);
       dispatch(userNotExists());
       toast.success(data.message);
     } catch (error: any) {
