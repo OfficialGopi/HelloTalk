@@ -1,10 +1,7 @@
 import DemoLayout from "@/app/DemoLayout";
 import { LayoutLoader } from "@/components/loaders/Loaders";
-import { server } from "@/constants/config";
-import { userExists, userNotExists } from "@/redux/reducers/auth";
-import axios from "axios";
-import { lazy, Suspense, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { lazy, Suspense } from "react";
+
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 
@@ -22,6 +19,7 @@ const Router = () => {
 
         <Route path="/" element={<Home />} />
         <Route path="/chat/:chatId" element={<DemoLayout />} />
+        <Route path="/demo" element={<DemoLayout />} />
 
         <Route path="*" element={<NotFound />} />
       </Routes>
