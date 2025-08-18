@@ -5,14 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { Search, Plus, Users, Bell, LogOut, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { userNotExists } from "../../redux/reducers/auth";
+import { userNotExists } from "@/redux/reducers/auth";
 import {
   setIsMobile,
   setIsNewGroup,
   setIsNotification,
   setIsSearch,
 } from "../../redux/reducers/misc";
-import { resetNotificationCount } from "../../redux/reducers/chat";
+import { resetNotificationCount } from "@/redux/reducers/chat";
 import ToggleThemeBtn from "./ToggleThemeBtn";
 import api from "@/utils/axiosInstace.util";
 
