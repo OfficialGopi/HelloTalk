@@ -2,22 +2,23 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera } from "lucide-react";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { useFileHandler, useInputValidation } from "6pp";
-import { server } from "@/constants/config";
 import { userExists } from "@/redux/reducers/auth";
-import { usernameValidator } from "@/utils/features";
+import { emailValidator, usernameValidator } from "@/utils/features";
 import ToggleThemeBtn from "@/components/shared/ToggleThemeBtn";
+import api from "@/utils/axiosInstace.util";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   const name = useInputValidation("");
+  const email = useInputValidation("");
   const bio = useInputValidation("");
   const username = useInputValidation("", usernameValidator);
-  const password = useInputValidation("");
+  const password = useInputValidation("", emailValidator);
   const avatar = useFileHandler("single");
 
   const dispatch = useDispatch();
@@ -30,17 +31,10 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data } = await axios.post(
-        `${server}/api/v1/user/login`,
-        {
-          username: username.value,
-          password: password.value,
-        },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const { data } = await api.post(`/user/login`, {
+        username: username.value,
+        password: password.value,
+      });
       dispatch(userExists(data.user));
       toast.success(data.message, { id: toastId });
     } catch (error) {
@@ -69,7 +63,7 @@ const Login = () => {
     formData.append("password", password.value);
 
     try {
-      const { data } = await axios.post(`${server}/api/v1/user/new`, formData, {
+      const { data } = await api.post(`/user/new`, formData, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -100,6 +94,7 @@ const Login = () => {
       bio={bio}
       username={username}
       password={password}
+      email={email}
     />
   );
 };
@@ -117,10 +112,11 @@ const AuthCard = ({
   bio,
   username,
   password,
+  email,
 }: any) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-200 dark:bg-neutral-950 px-4 text-sm relative">
-      <ToggleThemeBtn className="absolute top-4 right-4 p-2 rounded-full cursor-pointer dark:text-neutral-100 text-neutral-950 border border-neutral-500/50" />
+      <ToggleThemeBtn className="absolute top-4 right-4  rounded-full cursor-pointer p-2 border border-neutral-500/50" />
       <motion.div
         initial={{ opacity: 0, scale: 0.9, filter: "blur(6px)" }}
         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
@@ -188,6 +184,13 @@ const AuthCard = ({
                   placeholder="Name"
                   value={name.value}
                   onChange={name.changeHandler}
+                  className="w-full px-4 py-2 border rounded-md bg-transparent text-neutral-900 dark:text-neutral-100 border-neutral-300 dark:border-neutral-700 focus:ring-2 focus:ring-neutral-400 outline-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email.value}
+                  onChange={email.changeHandler}
                   className="w-full px-4 py-2 border rounded-md bg-transparent text-neutral-900 dark:text-neutral-100 border-neutral-300 dark:border-neutral-700 focus:ring-2 focus:ring-neutral-400 outline-none"
                 />
                 <input

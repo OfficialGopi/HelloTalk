@@ -20,6 +20,15 @@ const usernameValidator = (username: string) => {
     return { isValid: false, errorMessage: "Username is Invalid" };
 };
 
+const emailValidator = (email: string) => {
+  if (
+    !/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+      email
+    )
+  )
+    return { isValid: false, errorMessage: "Email is Invalid" };
+};
+
 const transformImage = (url = "", width = 100) => {
   const newUrl = url.replace("upload/", `upload/dpr_auto/w_${width}/`);
 
@@ -44,4 +53,10 @@ const fileFormat = (url = "") => {
   return "file";
 };
 
-export { fileFormat, getOrSaveFromStorage, usernameValidator, transformImage };
+export {
+  fileFormat,
+  getOrSaveFromStorage,
+  usernameValidator,
+  transformImage,
+  emailValidator,
+};
