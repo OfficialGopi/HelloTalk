@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../../env";
 
 import { UserModel } from "../models/user.model";
+import { IUser } from "../types/schemas.types";
 
 const socketAuthenticator = async (
   err: any,
@@ -25,7 +26,10 @@ const socketAuthenticator = async (
 
     if (!user) throw new ApiError(401, "Please login to access this route");
 
-    socket.user = user;
+    socket.user = {
+      _id: user._id.toString(),
+      name: user.name,
+    };
 
     next();
   } catch (error) {
