@@ -17,7 +17,7 @@ COPY . .
 EXPOSE 8080 
 
 # BUILD DIST FOLDER
-CMD ["npm", "run", "build"]
+RUN npm run build
 
 # START SERVER
 CMD ["npm", "start"]
