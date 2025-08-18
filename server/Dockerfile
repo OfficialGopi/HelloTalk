@@ -1,23 +1,25 @@
 # BASE IMAGE
-FROM node:22-alpine
+FROM node:22-alpine AS base
 
 # WORKING DIRECTORY
 WORKDIR /app
 
-# COPY PACKAGE.JSON 
-COPY package*.json .
-
-# INSTALLING DEPENDENCIES
+# BUILDER STAGE
+FROM base AS builder
+COPY package*.json ./
 RUN npm install
-
-# COPY OTHERS
 COPY . .
-
-# EXPOSE PORTS
-EXPOSE 8080 
-
-# BUILD DIST FOLDER
 RUN npm run build
 
-# START SERVER
+# PRODUCTION STAGE
+FROM base AS production
+
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+RUN npm install --omit=dev
+
+EXPOSE 8080
+
 CMD ["npm", "start"]
