@@ -1,5 +1,5 @@
 # BASE IMAGE
-FROM node:22-alpine:latest
+FROM node:22-alpine
 
 # WORKING DIRECTORY
 WORKDIR /app
