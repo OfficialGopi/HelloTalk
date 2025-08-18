@@ -1,0 +1,23 @@
+# BASE IMAGE
+FROM node:22-alpine:latest
+
+# WORKING DIRECTORY
+WORKDIR /app
+
+# COPY PACKAGE.JSON 
+COPY package*.json .
+
+# INSTALLING DEPENDENCIES
+RUN npm install
+
+# COPY OTHERS
+COPY . .
+
+# EXPOSE PORTS
+EXPOSE 8080 
+
+# BUILD DIST FOLDER
+CMD ["npm", "run", "build"]
+
+# START SERVER
+CMD ["npm", "start"]
