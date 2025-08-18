@@ -26,9 +26,10 @@ const socketAuthenticator = async (
 
     if (!user) throw new ApiError(401, "Please login to access this route");
 
-    socket.user = {
-      _id: user._id.toString(),
-      name: user.name,
+    socket.user = user as unknown as {
+      _id: string;
+      name: string;
+      [key: string]: any;
     };
 
     next();
