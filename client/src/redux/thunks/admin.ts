@@ -1,49 +1,43 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { server } from "@/constants/config";
-import axios, { AxiosError } from "axios";
+import { AxiosError } from "axios";
+import api from "@/utils/axiosInstace.util";
 
 const adminLogin = createAsyncThunk("admin/login", async (secretKey) => {
   try {
-    const config = {
-      withCredentials: true,
-      headers: {
-        "Content-Type": "application/json",
-      },
-    };
+    const { data } = await api.post(`/admin/verify`, { secretKey });
 
-    const { data } = await axios.post(
-      `${server}/api/v1/admin/verify`,
-      { secretKey },
-      config
-    );
-
-    return data.data.message;
+    return data.message;
   } catch (error) {
-    throw ((error as unknown as AxiosError)?.response?.data as any)?.message;
+    throw (
+      ((error as unknown as AxiosError)?.response?.data as any)?.message ??
+      "Something went wrong"
+    );
   }
 });
 
 const getAdmin = createAsyncThunk("admin/getAdmin", async () => {
   try {
-    const { data } = await axios.get(`${server}/api/v1/admin/`, {
-      withCredentials: true,
-    });
+    const { data } = await api.get(`/admin`);
 
-    return data.admin;
+    return data.data;
   } catch (error) {
-    throw ((error as unknown as AxiosError)?.response?.data as any)?.message;
+    throw (
+      ((error as unknown as AxiosError)?.response?.data as any)?.message ??
+      "Something went wrong"
+    );
   }
 });
 
 const adminLogout = createAsyncThunk("admin/logout", async () => {
   try {
-    const { data } = await axios.get(`${server}/api/v1/admin/logout`, {
-      withCredentials: true,
-    });
+    const { data } = await api.get(`/admin/logout`);
 
     return data.message;
   } catch (error) {
-    throw ((error as unknown as AxiosError)?.response?.data as any)?.message;
+    throw (
+      ((error as unknown as AxiosError)?.response?.data as any)?.message ??
+      "Something went wrong"
+    );
   }
 });
 
