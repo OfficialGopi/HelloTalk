@@ -9,7 +9,7 @@ const ToggleThemeBtn = ({ className }: { className: string }) => {
   return (
     <button
       className={cn(
-        "flex items-center justify-center w-8 h-8 rounded-full text-neutral-900 dark:text-neutral-100",
+        "flex items-center justify-center w-8 h-8 rounded-full text-neutral-900 dark:text-neutral-100 p-3",
         className
       )}
       onClick={toggleTheme}
@@ -23,9 +23,9 @@ const ToggleThemeBtn = ({ className }: { className: string }) => {
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.5, rotate: 90 }}
             transition={{ duration: 0.3 }}
-            className="flex"
+            className="flex "
           >
-            <Moon />
+            <Moon className="p-[2px]" />
           </motion.span>
         ) : (
           <motion.span
@@ -34,9 +34,9 @@ const ToggleThemeBtn = ({ className }: { className: string }) => {
             animate={{ opacity: 1, scale: 1, rotate: 0 }}
             exit={{ opacity: 0, scale: 0.5, rotate: -90 }}
             transition={{ duration: 0.3 }}
-            className="flex"
+            className="flex "
           >
-            <Sun />
+            <Sun className="p-[2px]" />
           </motion.span>
         )}
       </AnimatePresence>
