@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "motion/react";
 import { Camera } from "lucide-react";
@@ -35,7 +35,7 @@ const Login = () => {
         username: username.value,
         password: password.value,
       });
-      dispatch(userExists(data.user));
+      dispatch(userExists(data.data));
       toast.success(data.message, { id: toastId });
     } catch (error) {
       toast.error(
@@ -67,7 +67,7 @@ const Login = () => {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-      dispatch(userExists(data.user));
+      dispatch(userExists(data.data));
       toast.success(data.message, { id: toastId });
     } catch (error) {
       toast.error(
