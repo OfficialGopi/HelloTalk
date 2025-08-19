@@ -1,32 +1,79 @@
-import DemoLayout from "@/app/DemoLayout";
+import { Suspense, lazy, useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectRoute from "@/utils/ProtectedRoute";
 import { LayoutLoader } from "@/components/loaders/Loaders";
-import { lazy, Suspense } from "react";
-
-import { Routes, Route } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { userExists, userNotExists } from "@/redux/reducers/auth";
 import { Toaster } from "sonner";
+import { SocketProvider } from "@/lib/Socket";
+import api from "@/utils/axiosInstace.util";
 
 const Home = lazy(() => import("@/app/Home"));
 const Authenticate = lazy(() => import("@/app/Authenticate"));
-
+const Chat = lazy(() => import("@/app/Chat"));
+// const Groups = lazy(() => import("@/app/Groups"));
 const NotFound = lazy(() => import("@/app/NotFound"));
-const Router = () => {
-  return (
-    <Suspense fallback={<LayoutLoader />}>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/authenticate" element={<Authenticate />} />
-        <Route path="*" element={<NotFound />} />
 
-        <Route path="/" element={<Home />} />
-        <Route path="/chat/:chatId" element={<DemoLayout />} />
-        <Route path="/demo" element={<DemoLayout />} />
+// const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
+// const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+// const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+// const ChatManagement = lazy(() => import("./pages/admin/ChatManagement"));
+// const MessagesManagement = lazy(
+//   () => import("./pages/admin/MessageManagement")
+// );
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+const App = () => {
+  const { user, loader } = useSelector((state: { auth: any }) => state.auth);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    api
+      .get(`/user/me`)
+      .then(({ data }) => dispatch(userExists(data.data)))
+      .catch(() => dispatch(userNotExists()));
+  }, [dispatch]);
+
+  return loader ? (
+    <LayoutLoader />
+  ) : (
+    <BrowserRouter>
+      <Suspense fallback={<LayoutLoader />}>
+        <Routes>
+          <Route
+            element={
+              <SocketProvider>
+                <ProtectRoute user={user} />
+              </SocketProvider>
+            }
+          >
+            <Route path="/" element={<Home />} />
+            <Route path="/chat/:chatId" element={<Chat />} />
+            {/* <Route path="/groups" element={<Groups />} /> */}
+          </Route>
+
+          <Route
+            path="/authenticate"
+            element={
+              <ProtectRoute user={!user} redirect="/">
+                <Authenticate />
+              </ProtectRoute>
+            }
+          />
+
+          {/* <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/users" element={<UserManagement />} />
+          <Route path="/admin/chats" element={<ChatManagement />} />
+          <Route path="/admin/messages" element={<MessagesManagement />} /> */}
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
 
       <Toaster position="bottom-center" />
-    </Suspense>
+    </BrowserRouter>
   );
 };
 
-export default Router;
+export default App;
