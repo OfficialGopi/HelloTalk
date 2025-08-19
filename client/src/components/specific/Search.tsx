@@ -1,32 +1,43 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { motion, AnimatePresence } from "framer-motion";
-import { Search } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 import { useInputValidation } from "6pp";
 import { useAsyncMutation } from "@/hooks/hook";
 import {
   useLazySearchUserQuery,
   useSendFriendRequestMutation,
-} from "../../redux/api/api";
-import { setIsSearch } from "../../redux/reducers/misc";
-import UserItem from "../shared/UserItem";
+} from "@/redux/api/api";
+import { setIsSearch } from "@/redux/reducers/misc";
+import UserItem from "@/components/shared/UserItem";
+import Modal from "@/components/ui/Modal";
 
-const SearchDialog = () => {
-  const { isSearch } = useSelector(
-    (state: { misc: { isSearch: boolean } }) => state.misc
-  );
+interface User {
+  _id: string;
+  name: string;
+  avatar?: string;
+  [key: string]: any;
+}
 
+interface RootState {
+  misc: {
+    isSearch: boolean;
+  };
+}
+
+const Search: React.FC = () => {
+  const { isSearch } = useSelector((state: RootState) => state.misc);
   const [searchUser] = useLazySearchUserQuery();
+
   const [sendFriendRequest, isLoadingSendFriendRequest]: any = useAsyncMutation(
     useSendFriendRequestMutation
   );
 
   const dispatch = useDispatch();
   const search = useInputValidation("");
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   const addFriendHandler = async (id: string) => {
-    await sendFriendRequest("Sending friend request...", { userId: id });
+    await sendFriendRequest?.("Sending friend request...", { userId: id });
   };
 
   const searchCloseHandler = () => dispatch(setIsSearch(false));
@@ -36,80 +47,45 @@ const SearchDialog = () => {
       if (search.value.trim() !== "") {
         searchUser(search.value)
           .then(({ data }: any) => setUsers(data.users))
-          .catch((e: any) => console.log(e));
+          .catch((e: unknown) => console.error(e));
       } else {
         setUsers([]);
       }
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timeOutId);
   }, [search.value]);
 
   return (
-    <AnimatePresence>
-      {isSearch && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40"
-            onClick={searchCloseHandler}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+    <Modal isOpen={isSearch} onClose={searchCloseHandler}>
+      <div className="flex flex-col w-full space-y-4">
+        <h2 className="text-center text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+          Find People
+        </h2>
+        <div className="flex flex-1 items-center rounded-lg border border-neutral-400 dark:border-neutral-700 px-3 py-2 bg-neutral-100 dark:bg-neutral-900">
+          <SearchIcon className="w-5 h-5 text-neutral-500 mr-2" />
+          <input
+            type="text"
+            value={search.value}
+            onChange={search.changeHandler}
+            placeholder="Search..."
+            className="flex-1 bg-transparent focus:outline-none text-neutral-900 dark:text-neutral-100"
           />
+        </div>
 
-          {/* Dialog */}
-          <motion.div
-            className="fixed z-50 top-1/2 left-1/2 w-[90%] max-w-md -translate-x-1/2 -translate-y-1/2 
-              bg-neutral-900 border border-neutral-700 rounded-xl shadow-lg p-6"
-            initial={{ scale: 0.8, opacity: 0, filter: "blur(6px)" }}
-            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-            exit={{ scale: 0.8, opacity: 0, filter: "blur(6px)" }}
-            transition={{ type: "spring", damping: 20, stiffness: 200 }}
-          >
-            {/* Title */}
-            <h2 className="text-center text-lg font-semibold text-neutral-100 mb-4">
-              Find People
-            </h2>
-
-            {/* Input */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
-              <input
-                type="text"
-                value={search.value}
-                onChange={search.changeHandler}
-                placeholder="Search users..."
-                className="w-full pl-10 pr-3 py-2 rounded-md bg-neutral-800 
-                  text-neutral-100 placeholder-neutral-500 focus:outline-none 
-                  focus:ring-2 focus:ring-neutral-600"
-              />
-            </div>
-
-            {/* Results */}
-            <div className="mt-4 max-h-64 overflow-y-auto space-y-2">
-              {users.length > 0 ? (
-                users.map((i: any) => (
-                  <UserItem
-                    user={i}
-                    key={i._id}
-                    handler={addFriendHandler}
-                    handlerIsLoading={isLoadingSendFriendRequest}
-                  />
-                ))
-              ) : (
-                <p className="text-neutral-500 text-sm text-center mt-6">
-                  {search.value
-                    ? "No users found"
-                    : "Start typing to search..."}
-                </p>
-              )}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+        <div className="flex flex-col divide-y divide-neutral-200 dark:divide-neutral-800 max-h-64 overflow-y-auto">
+          {users.map((i) => (
+            <UserItem
+              user={i}
+              key={i._id}
+              handler={addFriendHandler}
+              handlerIsLoading={isLoadingSendFriendRequest}
+            />
+          ))}
+        </div>
+      </div>
+    </Modal>
   );
 };
 
-export default SearchDialog;
+export default Search;

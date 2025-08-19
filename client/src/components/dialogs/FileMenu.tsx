@@ -10,9 +10,10 @@ const FileMenu = ({
   anchorE1,
   chatId,
 }: {
-  anchorE1: HTMLElement | null;
+  anchorE1?: HTMLElement;
   chatId: string;
 }) => {
+  anchorE1;
   const { isFileMenu } = useSelector(
     (state: {
       misc: {

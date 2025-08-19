@@ -13,7 +13,7 @@ import { emitEvent, getOtherMember } from "../utils/socket.util";
 const { NEW_REQUEST, REFETCH_CHATS } = events;
 
 const signup = AsyncHandler(async (req, res, next) => {
-  const { name, username, password, bio } = req.body;
+  const { name, username, password, bio, email } = req.body;
 
   const file = req.file;
 
@@ -36,6 +36,7 @@ const signup = AsyncHandler(async (req, res, next) => {
     username,
     password,
     avatar,
+    email,
   });
 
   sendToken(res, user, 201, "User created");

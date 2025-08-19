@@ -145,7 +145,7 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
         </div>
 
         {/* Right Sidebar */}
-        <div className="hidden md:block md:col-span-4 lg:col-span-3 h-full bg-neutral-950 p-6 border-l border-neutral-800">
+        <div className="hidden md:block md:col-span-4 lg:col-span-3 h-full bg-neutral-100 dark:bg-neutral-950 p-6 border-l border-neutral-500/50">
           <Profile user={user} />
         </div>
       </div>

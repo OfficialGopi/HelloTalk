@@ -2,6 +2,7 @@ import {
   User as FaceIcon,
   AtSign as UserNameIcon,
   Calendar as CalendarIcon,
+  FileText as BioIcon,
 } from "lucide-react";
 import moment from "moment";
 import { transformImage } from "@/utils/features";
@@ -20,31 +21,39 @@ const Profile = ({
   };
 }) => {
   return (
-    <div className="flex flex-col items-center gap-8">
+    <div className="flex flex-col items-center gap-8 p-6 rounded-2xl shadow-xl border border-neutral-500/50 w-full max-w-md mx-auto">
       {/* Avatar */}
-      <img
-        src={transformImage(user?.avatar?.url)}
-        alt={user?.name || "Profile Avatar"}
-        className="w-48 h-48 rounded-full object-cover border-4 border-white shadow-md mb-4"
-      />
+      <div className="relative">
+        <img
+          src={transformImage(user?.avatar?.url)}
+          alt={user?.name || "Profile Avatar"}
+          className="w-40 h-40 rounded-full object-cover border-4 border-neutral-200 dark:border-neutral-800 shadow-lg"
+        />
+      </div>
 
       {/* Profile Fields */}
-      <ProfileCard heading="Bio" text={user?.bio} />
-      <ProfileCard
-        heading="Username"
-        text={user?.username}
-        Icon={<UserNameIcon size={18} />}
-      />
-      <ProfileCard
-        heading="Name"
-        text={user?.name}
-        Icon={<FaceIcon size={18} />}
-      />
-      <ProfileCard
-        heading="Joined"
-        text={moment(user?.createdAt).fromNow()}
-        Icon={<CalendarIcon size={18} />}
-      />
+      <div className="w-full flex flex-col gap-4">
+        <ProfileCard
+          heading="Username"
+          text={user?.username}
+          Icon={<UserNameIcon size={18} />}
+        />
+        <ProfileCard
+          heading="Bio"
+          text={user?.bio}
+          Icon={<BioIcon size={18} />}
+        />
+        <ProfileCard
+          heading="Name"
+          text={user?.name}
+          Icon={<FaceIcon size={18} />}
+        />
+        <ProfileCard
+          heading="Joined"
+          text={moment(user?.createdAt).fromNow()}
+          Icon={<CalendarIcon size={18} />}
+        />
+      </div>
     </div>
   );
 };
@@ -58,10 +67,12 @@ const ProfileCard = ({
   Icon?: React.ReactNode;
   heading: string;
 }) => (
-  <div className="flex items-center gap-4 text-center text-white">
-    {Icon && <div className="text-neutral-400">{Icon}</div>}
+  <div className="flex items-start gap-3 p-4 rounded-xl  border-neutral-500/50 border hover:shadow-md transition-all">
+    {Icon && <div className="text-neutral-500 mt-1">{Icon}</div>}
     <div className="flex flex-col">
-      <p className="text-base">{text || "—"}</p>
+      <p className="text-base font-medium text-neutral-900 dark:text-neutral-100">
+        {text || "—"}
+      </p>
       <span className="text-sm text-neutral-500">{heading}</span>
     </div>
   </div>
