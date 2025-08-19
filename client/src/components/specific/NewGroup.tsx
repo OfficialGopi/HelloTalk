@@ -81,7 +81,7 @@ const NewGroup = () => {
               <div className="h-10 bg-neutral-300 dark:bg-neutral-800 animate-pulse rounded-md" />
             </>
           ) : (
-            data?.friends?.map((i: any) => (
+            data?.data?.map((i: any) => (
               <UserItem
                 user={i}
                 key={i._id}

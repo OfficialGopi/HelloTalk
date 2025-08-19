@@ -1,10 +1,4 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Paperclip, Send } from "lucide-react";
 import FileMenu from "../components/dialogs/FileMenu";
@@ -21,6 +15,7 @@ import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { TypingLoader } from "@/components/loaders/Loaders";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import AutoResizeTextarea from "@/components/ui/AutoResizeTextArea";
 
 const {
   ALERT,
@@ -66,7 +61,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const members = chatDetails?.data?.chat?.members;
 
-  const messageOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const messageOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
 
     if (!IamTyping) {
@@ -173,11 +168,11 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
   return chatDetails.isLoading ? (
     <div className="p-4 text-neutral-500">Loading chat...</div>
   ) : (
-    <Fragment>
+    <div className="flex w-full flex-col h-full ">
       {/* Messages container */}
       <div
         ref={containerRef}
-        className="flex flex-col p-4 gap-4 bg-neutral-100 dark:bg-neutral-950 h-[90%] overflow-y-auto overflow-x-hidden"
+        className="flex flex-col p-4 gap-4 bg-neutral-50 dark:bg-neutral-900 flex-1  overflow-y-auto overflow-x-hidden"
       >
         {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
@@ -190,39 +185,37 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
       {/* Input form */}
       <form
         onSubmit={submitHandler}
-        className="h-[10%] border-t border-neutral-300 dark:border-neutral-700"
+        className="min-h-[10%] max-h-[20%] relative border-t border-neutral-500/50 bg-neutral-100 dark:bg-neutral-900   overflow-y-auto overflow-x-hidden"
       >
         <div className="flex items-center h-full p-4 relative">
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.8, rotate: 45 }}
-            className="absolute left-6 text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-white"
-            onClick={handleFileOpen}
-          >
-            <Paperclip />
-          </motion.button>
+          <div className="text-neutral-600 w-full dark:text-neutral-300 flex items-center gap-2 border border-neutral-500/50 rounded-lg p-2 focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600 ">
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.8, rotate: 45 }}
+              className="  text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-white"
+              onClick={handleFileOpen}
+            >
+              <Paperclip />
+            </motion.button>
 
-          <input
-            type="text"
-            placeholder="Type Message Here..."
-            value={message}
-            onChange={messageOnChange}
-            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-4 py-2 text-sm text-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600"
-          />
+            <AutoResizeTextarea
+              onChange={messageOnChange}
+              value={message}
+              className="relative bottom-0"
+            />
+          </div>
 
-          <motion.button
+          <button
             type="submit"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9, rotate: -15 }}
-            className="ml-4 p-2 rounded-full bg-orange-500 text-white hover:bg-orange-600"
+            className="ml-4 p-2 rounded-full border border-neutral-500/50 text-neutral-800 hover:bg-neutral-800 hover:text-neutral-100 transition dark:text-neutral-200"
           >
             <Send className="w-5 h-5" />
-          </motion.button>
+          </button>
         </div>
       </form>
 
       <FileMenu anchorE1={fileMenuAnchor} chatId={chatId} />
-    </Fragment>
+    </div>
   );
 };
 

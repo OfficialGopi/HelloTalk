@@ -1,65 +1,63 @@
 import React from "react";
-import ChatItem from "@/components/shared/ChatItem";
-import { motion, AnimatePresence } from "framer-motion";
+import ChatItem from "../shared/ChatItem";
+
+interface Chat {
+  _id: string;
+  name: string;
+  avatar?: string[];
+  groupChat?: boolean;
+  members?: string[];
+}
+
+interface NewMessageAlert {
+  chatId: string;
+  count: number;
+}
 
 interface ChatListProps {
   w?: string;
-  chats?: any[];
+  chats: Chat[];
   chatId?: string;
   onlineUsers?: string[];
-  newMessagesAlert?: { chatId: string; count: number }[];
-  handleDeleteChat?: (
-    e: React.MouseEvent,
-    id: string,
-    groupChat: boolean
-  ) => void;
+  newMessagesAlert?: NewMessageAlert[];
+  handleDeleteChat?: any;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
-  w = "100%",
   chats = [],
   chatId,
   onlineUsers = [],
-  newMessagesAlert = [{ chatId: "", count: 0 }],
+  newMessagesAlert = [],
   handleDeleteChat,
-}) => {
+}: ChatListProps) => {
   return (
-    <div className="flex flex-col overflow-y-auto h-full" style={{ width: w }}>
-      <AnimatePresence>
-        {chats?.map((data, index) => {
-          const { avatar, _id, name, groupChat, members } = data;
+    <div className="flex flex-col bg-neutral-100 dark:bg-neutral-950 overflow-y-scroll h-full [scrollbar-width:none]">
+      {chats.map((data, index) => {
+        const { avatar, _id, name, groupChat, members } = data;
 
-          const newMessageAlert = newMessagesAlert.find(
-            ({ chatId: id }) => id === _id
-          );
+        const newMessageAlert = newMessagesAlert.find(
+          (alert) => alert.chatId === _id
+        );
 
-          const isOnline = members?.some((member: string) =>
-            onlineUsers.includes(member)
-          );
+        const isOnline = members?.some((member) =>
+          onlineUsers.includes(member)
+        );
 
-          return (
-            <motion.div
-              key={_id}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-            >
-              <ChatItem
-                index={index}
-                newMessageAlert={newMessageAlert}
-                isOnline={isOnline}
-                avatar={avatar}
-                name={name}
-                _id={_id}
-                groupChat={groupChat}
-                sameSender={chatId === _id}
-                handleDeleteChat={handleDeleteChat}
-              />
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
+        return (
+          <ChatItem
+            index={index}
+            newMessageAlert={newMessageAlert}
+            isOnline={isOnline}
+            avatar={avatar}
+            name={name}
+            _id={_id}
+            key={_id}
+            groupChat={groupChat}
+            sameSender={chatId === _id}
+            handleDeleteChat={handleDeleteChat}
+          />
+        );
+      })}
     </div>
   );
 };

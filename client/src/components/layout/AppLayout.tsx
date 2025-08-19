@@ -110,7 +110,7 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
             onClick={(e) => e.stopPropagation()}
           >
             <ChatList
-              chats={data?.chats}
+              chats={data?.data}
               chatId={chatId}
               handleDeleteChat={handleDeleteChat}
               newMessagesAlert={newMessagesAlert}
@@ -123,12 +123,12 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
       {/* Main Layout */}
       <div className="grid grid-cols-12 h-[calc(100vh-4rem)]">
         {/* Left Sidebar */}
-        <div className="hidden sm:block sm:col-span-4 md:col-span-3 h-full border-r border-neutral-800">
+        <div className="hidden sm:block sm:col-span-4 md:col-span-3 h-full border-r border-neutral-500/50">
           {isLoading ? (
-            <div className="animate-pulse w-full h-full bg-neutral-800" />
+            <div className="animate-pulse w-full h-full bg-neutral-300 dark:bg-neutral-800" />
           ) : (
             <ChatList
-              chats={data?.chats}
+              chats={data?.data}
               chatId={chatId}
               handleDeleteChat={handleDeleteChat}
               newMessagesAlert={newMessagesAlert}

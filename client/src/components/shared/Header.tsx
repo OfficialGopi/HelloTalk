@@ -54,7 +54,7 @@ const Header = () => {
   return (
     <>
       {/* AppBar */}
-      <header className="w-full h-16 bg-neutral-100 dark:bg-neutral-950 shadow-md flex items-center justify-between px-4 sm:px-8">
+      <header className="w-full h-16 border-b border-neutral-500/50 bg-neutral-100 dark:bg-neutral-950 shadow-md flex items-center justify-between px-4 sm:px-8">
         {/* Mobile Menu */}
         <button
           className="sm:hidden text-neutral-200 hover:text-neutral-100"
