@@ -4,7 +4,7 @@ import { Navigate, Outlet } from "react-router-dom";
 const ProtectRoute = ({
   children,
   user,
-  redirect = "/login",
+  redirect = "/authenticate",
 }: {
   children?: React.ReactNode;
   user?: any;
