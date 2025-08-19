@@ -1,0 +1,29 @@
+version: "1.0"
+name: hello-talk-chatapp
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client/src:/app/src
+    environment:
+      - NODE_ENV=PRODUCTION
+      - VITE_SERVER=http://localhost:8080
+  server:
+    build: ./server
+    ports:
+      - "8080:8080"
+    environment:
+      - CLIENT_URL=http://localhost:3000
+      - CLOUDINARY_API_KEY=286776744628911
+      - CLOUDINARY_API_SECRET=igTSwPcI6N-J1Z4bw0KyvP427yI
+      - CLOUDINARY_CLOUD_NAME=dko5qxqqi
+      - USER_TOKEN_SECRET=kujbasfhjvbasjhfvbasjkbdfakisfhsudbfa
+      - USER_TOKEN_EXPIRY=1d
+      - ADMIN_TOKEN_SECRET=asdfasdfsiubdfkjsdbnfkjsdbfksbdfksdbkfbsdkfbsdkufbsdkfbsdkbfsdkb
+      - ADMIN_TOKEN_EXPIRY=1d
+      - ADMIN_SECRET_KEY=@OfficialGopi2004@
+      - MONGO_URI=mongodb+srv://hacker0G:00112233445566778899@hacker0g.ex9fo.mongodb.net/chatapp
+      - NODE_ENV=PRODUCTION
+      - PORT=8080
