@@ -46,7 +46,10 @@ const Search: React.FC = () => {
     const timeOutId = setTimeout(() => {
       if (search.value.trim() !== "") {
         searchUser(search.value)
-          .then(({ data }: any) => setUsers(data.users))
+          .then(({ data }: any) => {
+            console.log(data.data);
+            setUsers(data.data);
+          })
           .catch((e: unknown) => console.error(e));
       } else {
         setUsers([]);

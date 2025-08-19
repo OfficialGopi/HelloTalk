@@ -33,7 +33,7 @@ const signup = AsyncHandler(async (req, res, next) => {
   const user = await UserModel.create({
     name,
     bio,
-    username,
+    username: username.toLowerCase(),
     password,
     avatar,
     email,

@@ -25,7 +25,7 @@ const api = createApi({
 
     sendFriendRequest: builder.mutation({
       query: (data) => ({
-        url: "user/sendrequest",
+        url: "user/send-request",
         method: "PUT",
         credentials: "include",
         body: data,
@@ -43,7 +43,7 @@ const api = createApi({
 
     acceptFriendRequest: builder.mutation({
       query: (data) => ({
-        url: "user/acceptrequest",
+        url: "user/accept-request",
         method: "PUT",
         credentials: "include",
         body: data,
@@ -124,7 +124,7 @@ const api = createApi({
 
     removeGroupMember: builder.mutation({
       query: ({ chatId, userId }) => ({
-        url: `chat/removemember`,
+        url: `chat/remove-member`,
         method: "PUT",
         credentials: "include",
         body: { chatId, userId },
@@ -134,7 +134,7 @@ const api = createApi({
 
     addGroupMembers: builder.mutation({
       query: ({ members, chatId }) => ({
-        url: `chat/addmembers`,
+        url: `chat/add-members`,
         method: "PUT",
         credentials: "include",
         body: { members, chatId },
