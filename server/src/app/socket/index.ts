@@ -1,5 +1,4 @@
-import { Server } from "socket.io";
-import { corsOptions } from "../constants/cors.constant";
+import { Server, Socket } from "socket.io";
 import cookieParser from "cookie-parser";
 import { socketAuthenticator } from "./socket.middleware";
 import { Request, Response } from "express";
@@ -8,37 +7,28 @@ import { MessageModel } from "../models/message.model";
 import { events } from "../constants/events.constant";
 
 const {
-  ALERT,
   CHAT_JOINED,
   CHAT_LEAVED,
-  NEW_ATTACHMENT,
-  NEW_MESSAGE,
   NEW_MESSAGE_ALERT,
-  NEW_REQUEST,
-  ONLINE_USERS,
-  REFETCH_CHATS,
+  NEW_MESSAGE,
   START_TYPING,
   STOP_TYPING,
+  ONLINE_USERS,
 } = events;
-
-const io = new Server({
-  cors: corsOptions,
-});
 
 const userSocketIDs = new Map();
 const onlineUsers = new Set();
 
-io.use((socket, next) => {
+const socketAuthMiddleware = (socket: Socket, next: any) => {
   cookieParser()(
     socket.request as Request,
     {} as Response,
     async (err) => await socketAuthenticator(err, socket, next),
   );
-});
+};
 
-io.on("connection", (socket) => {
+const socketOnConection = (io: Server) => (socket: Socket) => {
   const user = socket.user!;
-
   userSocketIDs.set(user!._id.toString(), socket.id);
 
   socket.on(NEW_MESSAGE, async ({ chatId, members, message }) => {
@@ -101,6 +91,6 @@ io.on("connection", (socket) => {
     onlineUsers.delete(user._id.toString());
     socket.broadcast.emit(ONLINE_USERS, Array.from(onlineUsers));
   });
-});
+};
 
-export { io, userSocketIDs, onlineUsers };
+export { userSocketIDs, onlineUsers, socketAuthMiddleware, socketOnConection };

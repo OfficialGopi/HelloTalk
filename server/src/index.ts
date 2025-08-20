@@ -2,20 +2,23 @@ import http from "http";
 import { Application } from "express";
 import { env } from "./env";
 import { log } from "./logger";
-import app from "./app";
 import { connectDb } from "./db";
-import { Server } from "socket.io";
-import { io } from "./app/socket";
+import { Server, Socket } from "socket.io";
 
-async function main(app: Application, socketServer?: Server) {
+import app from "./app";
+import { socketAuthMiddleware, socketOnConection } from "./app/socket";
+import { corsOptions } from "./app/constants/cors.constant";
+
+async function main(app: Application) {
   await connectDb(env.MONGO_URI);
 
   const server = http.createServer(app);
-
-  socketServer?.attach(server);
-
-  app.set("io", socketServer);
-
+  const io = new Server(server, {
+    cors: corsOptions,
+  });
+  io.use(socketAuthMiddleware);
+  io.on("connection", socketOnConection(io));
+  app.set("io", io);
   server
     .listen(env.PORT)
     .on("listening", () => {
@@ -26,4 +29,4 @@ async function main(app: Application, socketServer?: Server) {
     });
 }
 
-main(app, io);
+main(app);

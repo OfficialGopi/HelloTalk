@@ -204,10 +204,7 @@ const leaveGroup = AsyncHandler(async (req, res, next) => {
     message: `User ${user?.name} has left the group`,
   });
 
-  return res.status(200).json({
-    success: true,
-    message: "Leave Group Successfully",
-  });
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
 const sendAttachments = AsyncHandler(async (req, res, next) => {
   const { chatId } = req.body;
@@ -289,11 +286,9 @@ const getMessages = AsyncHandler(async (req, res, next) => {
 
   const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
 
-  return res.status(200).json({
-    success: true,
-    messages: messages.reverse(),
-    totalPages,
-  });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { messages, totalPages }, "Success"));
 });
 const getChatDetails = AsyncHandler(async (req, res, next) => {
   if (req.query.populate === "true") {
