@@ -286,9 +286,16 @@ const getMessages = AsyncHandler(async (req, res, next) => {
 
   const totalPages = Math.ceil(totalMessagesCount / resultPerPage) || 0;
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { messages, totalPages }, "Success"));
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        messages: messages.reverse(),
+        totalPages,
+      },
+      "Success",
+    ),
+  );
 });
 const getChatDetails = AsyncHandler(async (req, res, next) => {
   if (req.query.populate === "true") {

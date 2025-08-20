@@ -42,11 +42,11 @@ const ChatItem: React.FC<ChatItemProps> = ({
         initial={{ opacity: 0, y: -20, filter: "blur(4px)", scale: 0.95 }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
         transition={{ delay: 0.05 * index, duration: 0.3, ease: "easeOut" }}
-        className={`relative flex items-center gap-4 p-4 rounded-md transition-colors 
+        className={`relative flex items-center gap-4 p-4 transition-colors 
           ${
             sameSender
-              ? "bg-neutral-900 text-white"
-              : "hover:bg-neutral-800 text-neutral-200"
+              ? "bg-neutral-300/50 dark:bg-neutral-900 dark:text-white"
+              : " hover:bg-neutral-200 dark:hover:bg-neutral-800 dark:text-neutral-200"
           }`}
       >
         <AvatarCard avatar={avatar as any} />

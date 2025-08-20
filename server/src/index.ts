@@ -17,9 +17,9 @@ async function main(app: Application) {
   const io = new Server(server, {
     cors: corsOptions,
   });
+  app.set("io", io);
   io.use(socketAuthenticator);
   io.on("connection", socketOnConection(io));
-  app.set("io", io);
   server
     .listen(env.PORT)
     .on("listening", () => {
