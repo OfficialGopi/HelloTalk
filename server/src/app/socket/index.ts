@@ -19,14 +19,6 @@ const {
 const userSocketIDs = new Map();
 const onlineUsers = new Set();
 
-const socketAuthMiddleware = (socket: Socket, next: any) => {
-  cookieParser()(
-    socket.request as Request,
-    {} as Response,
-    async (err) => await socketAuthenticator(err, socket, next),
-  );
-};
-
 const socketOnConection = (io: Server) => (socket: Socket) => {
   const user = socket.user!;
   userSocketIDs.set(user!._id.toString(), socket.id);
@@ -93,4 +85,4 @@ const socketOnConection = (io: Server) => (socket: Socket) => {
   });
 };
 
-export { userSocketIDs, onlineUsers, socketAuthMiddleware, socketOnConection };
+export { userSocketIDs, onlineUsers, socketOnConection };

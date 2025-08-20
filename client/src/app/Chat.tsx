@@ -82,7 +82,6 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const submitHandler = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
 
     socket?.emit(NEW_MESSAGE, { chatId, members, message });
     setMessage("");

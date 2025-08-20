@@ -17,6 +17,11 @@ const checkUserIfLoggedIn = AsyncHandler(async (req, res, next) => {
   if (!decodedData.userId)
     throw new ApiError(401, "Please login to access this route");
 
+  if (decodedData.exp! < Date.now() / 1000) {
+    res.clearCookie(tokenFieldNames.userToken);
+    throw new ApiError(401, "Please login to access this route");
+  }
+
   const user = await UserModel.findById(decodedData.userId);
 
   if (!user) throw new ApiError(401, "Please login to access this route");

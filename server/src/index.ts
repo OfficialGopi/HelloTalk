@@ -6,8 +6,9 @@ import { connectDb } from "./db";
 import { Server, Socket } from "socket.io";
 
 import app from "./app";
-import { socketAuthMiddleware, socketOnConection } from "./app/socket";
+import { socketOnConection } from "./app/socket";
 import { corsOptions } from "./app/constants/cors.constant";
+import { socketAuthenticator } from "./app/socket/socket.middleware";
 
 async function main(app: Application) {
   await connectDb(env.MONGO_URI);
@@ -16,7 +17,7 @@ async function main(app: Application) {
   const io = new Server(server, {
     cors: corsOptions,
   });
-  io.use(socketAuthMiddleware);
+  io.use(socketAuthenticator);
   io.on("connection", socketOnConection(io));
   app.set("io", io);
   server

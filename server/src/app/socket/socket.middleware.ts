@@ -5,24 +5,34 @@ import jwt from "jsonwebtoken";
 import { env } from "../../env";
 
 import { UserModel } from "../models/user.model";
-import { IUser } from "../types/schemas.types";
-
+import Cookies from "cookies";
+import { Request } from "express";
 const socketAuthenticator = async (
-  err: any,
   socket: Socket,
   next: (err?: ExtendedError) => void,
 ) => {
   try {
-    if (err) throw new ApiError(401, "Please login to access this route", err);
+    const cookies = new Cookies(
+      socket.request as Request,
+      (socket.request as Request).res!,
+      {
+        secure: true,
+      },
+    );
 
-    const authToken = socket.request.cookies[tokenFieldNames.userToken];
+    const authToken = cookies.get(tokenFieldNames.userToken);
 
     if (!authToken)
       throw new ApiError(401, "Please login to access this route");
 
     const decodedData: any = jwt.verify(authToken, env.USER_TOKEN_SECRET);
 
-    const user = await UserModel.findById(decodedData._id);
+    if (decodedData.exp! < Date.now() / 1000) {
+      cookies.set(tokenFieldNames.userToken, undefined);
+      throw new ApiError(401, "Please login to access this route");
+    }
+
+    const user = await UserModel.findById(decodedData.userId);
 
     if (!user) throw new ApiError(401, "Please login to access this route");
 
@@ -31,10 +41,9 @@ const socketAuthenticator = async (
       name: string;
       [key: string]: any;
     };
-
     next();
   } catch (error) {
-    next(new ApiError(401, "Please login to access this route"));
+    next(new ApiError(401, "Something went wrong"));
   }
 };
 
