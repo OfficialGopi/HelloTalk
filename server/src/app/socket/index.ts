@@ -1,7 +1,4 @@
 import { Server, Socket } from "socket.io";
-import cookieParser from "cookie-parser";
-import { socketAuthenticator } from "./socket.middleware";
-import { Request, Response } from "express";
 import { getSockets } from "./socket.helper";
 import { MessageModel } from "../models/message.model";
 import { events } from "../constants/events.constant";
