@@ -82,7 +82,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const submitHandler = (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (!message.trim()) return;
     socket?.emit(NEW_MESSAGE, { chatId, members, message });
     setMessage("");
   };
@@ -111,7 +111,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const newMessagesListener = useCallback(
     (data: any) => {
-      if (data.data !== chatId) return;
+      if (data.chatId !== chatId) return;
       setMessages((prev) => [...prev, data.message]);
     },
     [chatId]
@@ -119,7 +119,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const startTypingListener = useCallback(
     (data: any) => {
-      if (data.data !== chatId) return;
+      if (data.chatId !== chatId) return;
       setUserTyping(true);
     },
     [chatId]
@@ -127,7 +127,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const stopTypingListener = useCallback(
     (data: any) => {
-      if (data.data !== chatId) return;
+      if (data.chatId !== chatId) return;
       setUserTyping(false);
     },
     [chatId]
@@ -135,7 +135,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const alertListener = useCallback(
     (data: any) => {
-      if (data.data !== chatId) return;
+      if (data.chatId !== chatId) return;
       const messageForAlert = {
         content: data.message,
         sender: {
