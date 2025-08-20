@@ -9,6 +9,8 @@ const getSocket = () => useContext(SocketContext);
 const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const socket = useMemo(() => io(SERVER_URL, { withCredentials: true }), []);
 
+  console.log(socket);
+
   return (
     <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
   );

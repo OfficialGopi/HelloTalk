@@ -9,12 +9,11 @@ import { events } from "../constants/events";
 import { useChatDetailsQuery, useGetMessagesQuery } from "@/redux/api/api";
 import { useErrors, useSocketEvents } from "@/hooks/hook";
 import { useInfiniteScrollTop } from "6pp";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setIsFileMenu } from "../redux/reducers/misc";
 import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { TypingLoader } from "@/components/loaders/Loaders";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import AutoResizeTextarea from "@/components/ui/AutoResizeTextArea";
 
 const {
@@ -37,21 +36,21 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const [fileMenuAnchor, setFileMenuAnchor] = useState<any>(null);
 
   const [IamTyping, setIamTyping] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
   const typingTimeout = useRef<any>(null);
+  const { isFileMenu } = useSelector((state: any) => state.misc);
 
   const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
   const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
 
   const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(
     containerRef,
-    oldMessagesChunk.data?.totalPages,
+    oldMessagesChunk.data?.data.totalPages,
     page,
     setPage,
-    oldMessagesChunk.data?.messages
+    oldMessagesChunk.data?.data.messages
   );
 
   const errors = [
@@ -59,7 +58,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
     { isError: oldMessagesChunk.isError, error: oldMessagesChunk.error },
   ];
 
-  const members = chatDetails?.data?.chat?.members;
+  const members = chatDetails?.data?.data?.members;
 
   const messageOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
@@ -77,9 +76,8 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
     }, 2000);
   };
 
-  const handleFileOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
-    dispatch(setIsFileMenu(true));
-    setFileMenuAnchor(e.currentTarget);
+  const handleToggleFileOpen = () => {
+    dispatch(setIsFileMenu(!isFileMenu));
   };
 
   const submitHandler = (e: React.FormEvent) => {
@@ -114,7 +112,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const newMessagesListener = useCallback(
     (data: any) => {
-      if (data.chatId !== chatId) return;
+      if (data.data !== chatId) return;
       setMessages((prev) => [...prev, data.message]);
     },
     [chatId]
@@ -122,7 +120,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const startTypingListener = useCallback(
     (data: any) => {
-      if (data.chatId !== chatId) return;
+      if (data.data !== chatId) return;
       setUserTyping(true);
     },
     [chatId]
@@ -130,7 +128,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const stopTypingListener = useCallback(
     (data: any) => {
-      if (data.chatId !== chatId) return;
+      if (data.data !== chatId) return;
       setUserTyping(false);
     },
     [chatId]
@@ -138,7 +136,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
 
   const alertListener = useCallback(
     (data: any) => {
-      if (data.chatId !== chatId) return;
+      if (data.data !== chatId) return;
       const messageForAlert = {
         content: data.message,
         sender: {
@@ -168,14 +166,14 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
   return chatDetails.isLoading ? (
     <div className="p-4 text-neutral-500">Loading chat...</div>
   ) : (
-    <div className="flex w-full flex-col h-full ">
+    <div className="flex w-full flex-col h-full overflow-hidden">
       {/* Messages container */}
       <div
         ref={containerRef}
         className="flex flex-col p-4 gap-4 bg-neutral-50 dark:bg-neutral-900 flex-1  overflow-y-auto overflow-x-hidden"
       >
         {allMessages.map((i) => (
-          <MessageComponent key={i._id} message={i} user={user} />
+          <MessageComponent key={i._id} data={i} user={user} />
         ))}
 
         {userTyping && <TypingLoader />}
@@ -185,18 +183,21 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
       {/* Input form */}
       <form
         onSubmit={submitHandler}
-        className="min-h-[10%] max-h-[20%] relative border-t border-neutral-500/50 bg-neutral-100 dark:bg-neutral-900   overflow-y-auto overflow-x-hidden"
+        className="min-h-[10%] max-h-[20%] relative border-t border-neutral-500/50 bg-neutral-100 dark:bg-neutral-900   "
       >
         <div className="flex items-center h-full p-4 relative">
           <div className="text-neutral-600 w-full dark:text-neutral-300 flex items-center gap-2 border border-neutral-500/50 rounded-lg p-2 focus:ring-2 focus:ring-neutral-400 dark:focus:ring-neutral-600 ">
-            <motion.button
-              type="button"
-              whileTap={{ scale: 0.8, rotate: 45 }}
-              className="  text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-white"
-              onClick={handleFileOpen}
-            >
-              <Paperclip />
-            </motion.button>
+            <div className="  text-neutral-600 dark:text-neutral-300 hover:text-neutral-800 dark:hover:text-white">
+              <div className="relative" onClick={handleToggleFileOpen}>
+                <FileMenu chatId={chatId} />
+                <Paperclip
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFileOpen();
+                  }}
+                />
+              </div>
+            </div>
 
             <AutoResizeTextarea
               onChange={messageOnChange}
@@ -213,8 +214,6 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
           </button>
         </div>
       </form>
-
-      <FileMenu anchorE1={fileMenuAnchor} chatId={chatId} />
     </div>
   );
 };
