@@ -165,7 +165,7 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
   return chatDetails.isLoading ? (
     <div className="p-4 text-neutral-500">Loading chat...</div>
   ) : (
-    <div className="flex w-full flex-col h-full overflow-hidden">
+    <div className="flex w-full flex-col h-full relative overflow-hidden">
       {/* Messages container */}
       <div
         ref={containerRef}

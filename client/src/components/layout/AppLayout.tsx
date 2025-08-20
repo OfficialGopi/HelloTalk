@@ -86,7 +86,7 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
   useSocketEvents(socket, eventHandlers);
 
   return (
-    <>
+    <div className="h-screen w-full overflow-hidden">
       <Title />
       <Header />
 
@@ -138,7 +138,7 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
         </div>
 
         {/* Chat Content */}
-        <div className="col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-6 h-full">
+        <div className="col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-6 h-full overflow-hidden">
           {WrappedComponent && (
             <WrappedComponent {...props} chatId={chatId} user={user} />
           )}
@@ -149,7 +149,7 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
           <Profile user={user} />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
