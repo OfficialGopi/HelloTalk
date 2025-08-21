@@ -11,12 +11,12 @@ const schema = new mongoose.Schema<IRequest & mongoose.Document>(
 
     sender: {
       type: mongoose.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: true,
     },
     receiver: {
       type: mongoose.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: true,
     },
   },
