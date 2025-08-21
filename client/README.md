@@ -1,69 +1,85 @@
-# React + TypeScript + Vite
+## HelloTalk Client (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modern React app for real‑time chat with private and group conversations, file attachments, friend requests, notifications, and an admin dashboard.
 
-Currently, two official plugins are available:
+### Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19, Vite 7, TypeScript
+- Redux Toolkit + RTK Query
+- React Router 7, Socket.IO Client 4
+- Tailwind CSS 4, Chart.js
 
-## Expanding the ESLint configuration
+### Requirements
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node 18+
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Environment
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+Create `client/.env.local`:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_SERVER=http://localhost:8080
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This is used to construct `SERVER_URL` and `SERVER_API_URL`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Install & Run
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cd client
+npm i
+npm run dev
 ```
+
+Build & Preview
+
+```bash
+npm run build
+npm run preview
+```
+
+### Scripts
+
+- `dev`: Vite dev server
+- `build`: Type check + production build
+- `preview`: Preview built app
+- `lint`: ESLint
+
+### Routing
+
+See `src/router/Router.tsx` for routes:
+
+- App routes (protected by `ProtectedRoute`):
+  - `/` (Home), `/chat/:chatId`, `/groups`
+- Auth route: `/authenticate` (guarded to redirect if logged in)
+- Admin routes: `/admin`, `/admin/dashboard`, `/admin/users`, `/admin/chats`, `/admin/messages`
+
+### State & Data
+
+- Redux slices: `auth`, `chat`, `misc` in `src/redux/reducers/`
+- RTK Query API in `src/redux/api/api.ts` with endpoints for chats, users, messages
+- Axios instance for non-RTK calls: `src/utils/axiosInstace.util.ts`
+
+### Realtime (Socket.IO)
+
+- `src/lib/Socket.tsx` provides `SocketProvider` and `getSocket()`
+- Connects to `VITE_SERVER` with `withCredentials: true`
+- Events mirrored in `src/constants/events.ts`
+
+### UI
+
+- Components under `src/components/` (shared/dialogs/layout/ui)
+- Tailwind utilities and `tailwind-merge` for style composition
+
+### Docker
+
+Produces a static build served by `serve` on port 3000.
+
+```bash
+docker build -t hellotalk-client ./client
+docker run -p 3000:3000 hellotalk-client
+```
+
+### Notes
+
+- Cookies from the server are `secure:true` and `sameSite:"none"`; for local HTTP dev, prefer HTTPS or adjust server cookie options for development only.
