@@ -53,9 +53,12 @@ const Sidebar = ({
 
   return (
     <div className={`w-[${w}] flex flex-col p-8 space-y-6`}>
-      <h2 className="text-xl font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
-        Chattu
-      </h2>
+      <div className="flex items-center gap-3">
+        <img src="/logo.png" alt="logo" className="w-10 h-10 rounded-lg" />
+        <h2 className="text-xl font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
+          HELLOTALK
+        </h2>
+      </div>
 
       <div className="flex flex-col space-y-3">
         {adminTabs.map((tab) => {

@@ -1,7 +1,6 @@
 import { env } from "../../env";
 import { tokenFieldNames } from "../constants/cookie.constant";
 import { UserModel } from "../models/user.model";
-import { IUser } from "../types/schemas.types";
 import { AsyncHandler } from "../utils/async-handler.util";
 import { ApiError } from "../utils/response-formatter.util";
 import jwt from "jsonwebtoken";
@@ -40,7 +39,13 @@ const isAdmin = AsyncHandler(async (req, res, next) => {
     adminSecretKey: string;
   } & jwt.JwtPayload;
 
-  const isMatched = secretKey.adminSecretKey === env.ADMIN_SECRET_KEY;
+  if (secretKey.exp! < Date.now() / 1000) {
+    res.clearCookie(tokenFieldNames.adminToken);
+    throw new ApiError(401, "Only Admin can access this route");
+  }
+
+  const isMatched =
+    secretKey.adminSecretKey?.toString() === env.ADMIN_SECRET_KEY.toString();
 
   if (!isMatched) throw new ApiError(401, "Only Admin can access this route");
 

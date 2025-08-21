@@ -22,7 +22,6 @@ adminRouter.get("/", getAdminData);
 adminRouter.get("/users", allUsers);
 adminRouter.get("/chats", allChats);
 adminRouter.get("/messages", allMessages);
-
 adminRouter.get("/stats", getDashboardStats);
 
 export default adminRouter;

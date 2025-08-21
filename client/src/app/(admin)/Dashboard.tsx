@@ -15,13 +15,21 @@ import { useErrors } from "../../hooks/hook";
 import { motion } from "framer-motion";
 
 const Dashboard = () => {
-  const { loading, data, error } = useFetchData({
+  const {
+    loading,
+    data,
+    error,
+  }: {
+    loading: boolean;
+    data: any;
+    error: any;
+  } = useFetchData({
     url: `${SERVER_API_URL}/admin/stats`,
+    credentials: "include",
     dependencyProps: [],
-    key: "dashboard-stats",
   });
 
-  const { stats }: any = data || {};
+  const stats = data?.data;
   useErrors([{ isError: error, error }] as any);
 
   return (

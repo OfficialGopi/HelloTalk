@@ -16,7 +16,7 @@ const adminLogin = AsyncHandler(async (req, res, next) => {
 
   const token = jwt.sign(
     {
-      secretKey: env.ADMIN_SECRET_KEY,
+      adminSecretKey: env.ADMIN_SECRET_KEY,
     },
     env.ADMIN_TOKEN_SECRET,
     {
