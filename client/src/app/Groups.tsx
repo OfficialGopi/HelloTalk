@@ -50,9 +50,7 @@ const Groups = () => {
   const [removeMember, isLoadingRemoveMember]: any = useAsyncMutation(
     useRemoveGroupMemberMutation
   );
-  const [deleteGroup, isLoadingDeleteGroup]: any = useAsyncMutation(
-    useDeleteChatMutation
-  );
+  const [deleteGroup, _]: any = useAsyncMutation(useDeleteChatMutation);
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -294,7 +292,7 @@ const Groups = () => {
   );
 };
 
-const GroupsList = ({ w = "100%", myGroups = [], chatId }: any) => (
+const GroupsList = ({ myGroups = [], chatId }: any) => (
   <div className="w-full h-full overflow-y-auto bg-gradient-to-b from-neutral-200 to-neutral-300 dark:from-neutral-900 dark:to-neutral-800">
     {myGroups.length > 0 ? (
       myGroups.map((group: any) => (
