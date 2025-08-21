@@ -20,12 +20,12 @@ const schema = new mongoose.Schema<IMessage & mongoose.Document>(
 
     sender: {
       type: mongoose.Types.ObjectId,
-      ref: "users",
+      ref: "User",
       required: true,
     },
     chat: {
       type: mongoose.Types.ObjectId,
-      ref: "chats",
+      ref: "Chat",
       required: true,
     },
   },
