@@ -26,9 +26,9 @@ chatRouter.get("/my", getMyChats);
 
 chatRouter.get("/my/groups", getMyGroups);
 
-chatRouter.put("/addmembers", addMembers);
+chatRouter.put("/add-members", addMembers);
 
-chatRouter.put("/removemember", removeMember);
+chatRouter.put("/remove-member", removeMember);
 
 chatRouter.delete("/leave/:id", leaveGroup);
 

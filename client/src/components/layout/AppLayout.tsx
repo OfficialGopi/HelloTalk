@@ -140,7 +140,12 @@ const AppLayout = () => (WrappedComponent?: React.FC<any>) => (props: any) => {
         {/* Chat Content */}
         <div className="col-span-12 sm:col-span-8 md:col-span-5 lg:col-span-6 h-full overflow-hidden">
           {WrappedComponent && (
-            <WrappedComponent {...props} chatId={chatId} user={user} />
+            <WrappedComponent
+              {...props}
+              chatId={chatId}
+              user={user}
+              chat={data?.data?.find((chat: any) => chat._id === chatId)}
+            />
           )}
         </div>
 

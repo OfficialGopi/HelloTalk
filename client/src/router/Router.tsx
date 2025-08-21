@@ -11,7 +11,7 @@ import api from "@/utils/axiosInstace.util";
 const Home = lazy(() => import("@/app/Home"));
 const Authenticate = lazy(() => import("@/app/Authenticate"));
 const Chat = lazy(() => import("@/app/Chat"));
-// const Groups = lazy(() => import("@/app/Groups"));
+const Groups = lazy(() => import("@/app/Groups"));
 const NotFound = lazy(() => import("@/app/NotFound"));
 
 // const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -49,7 +49,7 @@ const App = () => {
           >
             <Route path="/" element={<Home />} />
             <Route path="/chat/:chatId" element={<Chat />} />
-            {/* <Route path="/groups" element={<Groups />} /> */}
+            <Route path="/groups" element={<Groups />} />
           </Route>
 
           <Route

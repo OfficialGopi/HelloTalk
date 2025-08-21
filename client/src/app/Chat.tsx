@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { Paperclip, Send } from "lucide-react";
+import { Paperclip, PhoneCall, Send, Video } from "lucide-react";
 import FileMenu from "../components/dialogs/FileMenu";
 import MessageComponent from "../components/shared/MessageComponent";
 import { getSocket } from "@/lib/Socket";
@@ -15,6 +15,7 @@ import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { TypingLoader } from "@/components/loaders/Loaders";
 import { useNavigate } from "react-router-dom";
 import AutoResizeTextarea from "@/components/ui/AutoResizeTextArea";
+import AvatarCard from "@/components/shared/AvatarCard";
 
 const {
   ALERT,
@@ -25,7 +26,15 @@ const {
   STOP_TYPING,
 } = events;
 
-const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
+const Chat = ({
+  chatId,
+  user,
+  chat,
+}: {
+  chatId: string;
+  user: any;
+  chat: any;
+}) => {
   const socket = getSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -166,6 +175,22 @@ const Chat = ({ chatId, user }: { chatId: string; user: any }) => {
     <div className="p-4 text-neutral-500">Loading chat...</div>
   ) : (
     <div className="flex w-full flex-col h-full relative overflow-hidden">
+      <div className="relative top-0 left-0 right-0 h-[60px] bg-neutral-200 dark:bg-neutral-900 border-b border-neutral-500/50 flex items-center  p-2">
+        <AvatarCard avatar={chat?.avatar} />
+        <div className="flex-1 ml-4 text-neutral-900 dark:text-neutral-100 text-lg font-medium">
+          {chat?.name}
+        </div>
+        {!chat?.groupChat && (
+          <div className="flex gap-2 items-center">
+            <button className="p-1 hover:cursor-pointer dark:text-neutral-100">
+              <PhoneCall />
+            </button>
+            <button className="p-1 hover:cursor-pointer dark:text-neutral-100">
+              <Video />
+            </button>
+          </div>
+        )}
+      </div>
       {/* Messages container */}
       <div
         ref={containerRef}
