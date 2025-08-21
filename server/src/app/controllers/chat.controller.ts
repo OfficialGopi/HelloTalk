@@ -138,14 +138,10 @@ const addMembers = AsyncHandler(async (req, res, next) => {
 const removeMember = AsyncHandler(async (req, res, next) => {
   const { userId, chatId } = req.body;
 
-  console.log(chatId, userId);
-
   const [chat, userThatWillBeRemoved] = await Promise.all([
     ChatModel.findById(chatId),
     UserModel.findById(userId, "name"),
   ]);
-
-  console.log("hi");
 
   if (!chat) throw new ApiError(404, "Chat not found");
 
