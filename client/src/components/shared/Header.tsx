@@ -64,12 +64,14 @@ const Header = () => {
         </button>
         {/* Left - Brand */}
         <div className="flex items-center h-full gap-2 justify-center">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="sm:w-8 sm:h-8 object-cover rounded-full w-4 h-4"
-          />
-          <h1 className="text-xl font-semibold text-neutral-800 dark:text-neutral-100 sm:flex hidden">
+          <div className=" h-[40px] w-[40px] p-1">
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className=" object-cover rounded-full"
+            />
+          </div>
+          <h1 className="text-lg font-semibold text-neutral-800 dark:text-neutral-100 sm:flex hidden">
             HelloTalk
           </h1>
         </div>

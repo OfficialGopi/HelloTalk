@@ -25,6 +25,7 @@ const schema = new mongoose.Schema<IRequest & mongoose.Document>(
   },
 );
 
-export const RequestModel =
-  mongoose.models.Request ||
-  mongoose.model<IRequest & mongoose.Document>("requests", schema);
+export const RequestModel = mongoose.model<IRequest & mongoose.Document>(
+  "Request",
+  schema,
+);

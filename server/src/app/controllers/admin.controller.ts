@@ -64,42 +64,56 @@ const allUsers = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, transformedUsers, "Success"));
 });
 const allChats = AsyncHandler(async (req, res, next) => {
-  const chats = await ChatModel.find({})
+  const chats: any = await ChatModel.find({})
     .populate("members", "name avatar")
     .populate("creator", "name avatar");
 
   const transformedChats = await Promise.all(
-    chats.map(async ({ members, _id, groupChat, name, creator }) => {
-      const totalMessages = await MessageModel.countDocuments({ chat: _id });
-
-      return {
+    chats.map(
+      async ({
+        members,
         _id,
         groupChat,
         name,
-        avatar: members.slice(0, 3).map((member: any) => member.avatar.url),
-        members: members.map(
-          ({
-            _id,
-            name,
-            avatar,
-          }: {
-            _id: string;
-            name: string;
-            avatar: { url: string };
-          }) => ({
-            _id,
-            name,
-            avatar: avatar.url,
-          }),
-        ),
-        creator: {
-          name: creator?.name || "None",
-          avatar: creator?.avatar.url || "",
-        },
-        totalMembers: members.length,
-        totalMessages,
-      };
-    }),
+        creator,
+      }: {
+        members: any;
+        _id: string;
+        groupChat: boolean;
+        name: string;
+        creator: any;
+      }) => {
+        const totalMessages = await MessageModel.countDocuments({ chat: _id });
+
+        return {
+          _id,
+          groupChat,
+          name,
+          avatar: members.slice(0, 3).map((member: any) => member.avatar.url),
+          members: members.map(
+            ({
+              _id,
+              name,
+              avatar,
+            }: {
+              _id: string;
+              name: string;
+              avatar: { url: string };
+            }) => ({
+              _id,
+              name,
+              avatar: avatar.url,
+            }),
+          ),
+          creator: {
+            name: creator?.name || "None",
+            avatar: creator?.avatar.url || "",
+          },
+          totalMembers: members.length,
+          totalMessages,
+        };
+      },
+    ),
   );
 
   return res
@@ -107,12 +121,26 @@ const allChats = AsyncHandler(async (req, res, next) => {
     .json(new ApiResponse(200, transformedChats, "Success"));
 });
 const allMessages = AsyncHandler(async (req, res, next) => {
-  const messages = await MessageModel.find({})
+  const messages: any = await MessageModel.find({})
     .populate("sender", "name avatar")
     .populate("chat", "groupChat");
 
   const transformedMessages = messages.map(
-    ({ content, attachments, _id, sender, createdAt, chat }) => ({
+    ({
+      content,
+      attachments,
+      _id,
+      sender,
+      createdAt,
+      chat,
+    }: {
+      content: string;
+      attachments: string[];
+      _id: string;
+      sender: any;
+      createdAt: Date;
+      chat: any;
+    }) => ({
       _id,
       attachments,
       content,

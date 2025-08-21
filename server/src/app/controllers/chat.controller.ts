@@ -50,26 +50,28 @@ const getMyChats = AsyncHandler(async (req, res) => {
     "name avatar",
   );
 
-  const transformedChats = chats.map(({ _id, name, members, groupChat }) => {
-    const otherMember = getOtherMember(members, req.user!);
+  const transformedChats = chats.map(
+    ({ _id, name, members, groupChat }: any) => {
+      const otherMember = getOtherMember(members, req.user!);
 
-    return {
-      _id,
-      groupChat,
-      avatar: groupChat
-        ? members
-            .slice(0, 3)
-            .map(({ avatar }: { avatar: { url: string } }) => avatar.url)
-        : [otherMember?.avatar?.url],
-      name: groupChat ? name : otherMember?.name,
-      members: members.reduce((prev: string[], curr: Partial<IUser>) => {
-        if (curr._id!.toString() !== req.user!._id!.toString()) {
-          prev.push(curr._id!.toString());
-        }
-        return prev;
-      }, []),
-    };
-  });
+      return {
+        _id,
+        groupChat,
+        avatar: groupChat
+          ? members
+              .slice(0, 3)
+              .map(({ avatar }: { avatar: { url: string } }) => avatar.url)
+          : [otherMember?.avatar?.url],
+        name: groupChat ? name : otherMember?.name,
+        members: members.reduce((prev: string[], curr: Partial<IUser>) => {
+          if (curr._id!.toString() !== req.user!._id!.toString()) {
+            prev.push(curr._id!.toString());
+          }
+          return prev;
+        }, []),
+      };
+    },
+  );
 
   return res
     .status(200)
@@ -86,9 +88,7 @@ const getMyGroups = AsyncHandler(async (req, res, next) => {
     _id,
     groupChat,
     name,
-    avatar: members
-      .slice(0, 3)
-      .map(({ avatar }: { avatar: { url: string } }) => avatar.url),
+    avatar: members.slice(0, 3).map(({ avatar }: any) => avatar.url),
   }));
 
   return res.status(200).json(new ApiResponse(200, groups, "Success"));
@@ -127,11 +127,15 @@ const addMembers = AsyncHandler(async (req, res, next) => {
   emitEvent(
     req,
     ALERT,
-    chat.members,
+    chat.members.map((i) => i.toString()) as string[],
     `${allUsersName} has been added in the group`,
   );
 
-  emitEvent(req, REFETCH_CHATS, chat.members);
+  emitEvent(
+    req,
+    REFETCH_CHATS,
+    chat.members.map((i) => i.toString()) as string[],
+  );
 
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
@@ -153,15 +157,15 @@ const removeMember = AsyncHandler(async (req, res, next) => {
   if (chat.members.length <= 3)
     throw new ApiError(400, "Group must have at least 3 members");
 
-  const allChatMembers = chat.members.map((i: string) => i.toString());
+  const allChatMembers = chat.members.map((i: any) => i.toString());
 
   chat.members = chat.members.filter(
-    (member: string) => member.toString() !== userId.toString(),
+    (member: any) => member.toString() !== userId.toString(),
   );
 
   await chat.save();
 
-  emitEvent(req, ALERT, chat.members, {
+  emitEvent(req, ALERT, chat.members.map((i: any) => i.toString())!, {
     message: `${userThatWillBeRemoved?.name} has been removed from the group`,
     chatId,
   });
@@ -180,7 +184,7 @@ const leaveGroup = AsyncHandler(async (req, res, next) => {
   if (!chat.groupChat) throw new ApiError(400, "This is not a group chat");
 
   const remainingMembers = chat.members.filter(
-    (member: string) => member.toString() !== req.user!._id!.toString(),
+    (member: any) => member.toString() !== req.user!._id!.toString(),
   );
 
   if (remainingMembers.length < 3)
@@ -199,10 +203,15 @@ const leaveGroup = AsyncHandler(async (req, res, next) => {
     chat.save(),
   ]);
 
-  emitEvent(req, ALERT, chat.members, {
-    chatId,
-    message: `User ${user?.name} has left the group`,
-  });
+  emitEvent(
+    req,
+    ALERT,
+    chat.members.map((i: any) => i.toString()),
+    {
+      chatId,
+      message: `User ${user?.name} has left the group`,
+    },
+  );
 
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
@@ -251,12 +260,22 @@ const sendAttachments = AsyncHandler(async (req, res, next) => {
 
   const message = await MessageModel.create(messageForDB);
 
-  emitEvent(req, NEW_MESSAGE, chat.members, {
-    message: messageForRealTime,
-    chatId,
-  });
+  emitEvent(
+    req,
+    NEW_MESSAGE,
+    chat.members.map((i) => i.toString()),
+    {
+      message: messageForRealTime,
+      chatId,
+    },
+  );
 
-  emitEvent(req, NEW_MESSAGE_ALERT, chat.members, { chatId });
+  emitEvent(
+    req,
+    NEW_MESSAGE_ALERT,
+    chat.members.map((i) => i.toString()),
+    { chatId },
+  );
 
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
@@ -271,7 +290,7 @@ const getMessages = AsyncHandler(async (req, res, next) => {
 
   if (!chat) throw new ApiError(404, "Chat not found");
 
-  if (!chat.members.includes(req.user!._id!.toString()))
+  if (!chat.members.includes(req.user!._id!))
     throw new ApiError(403, "You are not allowed to access this chat");
 
   const [messages, totalMessagesCount] = await Promise.all([
@@ -346,7 +365,7 @@ const renameGroup = AsyncHandler(async (req, res, next) => {
 
   await chat.save();
 
-  emitEvent(req, REFETCH_CHATS, chat.members);
+  emitEvent(req, REFETCH_CHATS, chat.members.map((i: any) => i.toString())!);
 
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });
@@ -362,7 +381,7 @@ const deleteChat = AsyncHandler(async (req, res, next) => {
   if (chat.groupChat && chat.creator.toString() !== req.user!._id!.toString())
     throw new ApiError(403, "You are not allowed to delete the group");
 
-  if (!chat.groupChat && !chat.members.includes(req.user!._id!.toString())) {
+  if (!chat.groupChat && !chat.members.includes(req.user!._id!)) {
     throw new ApiError(403, "You are not allowed to delete the chat");
   }
 
@@ -388,7 +407,11 @@ const deleteChat = AsyncHandler(async (req, res, next) => {
   await chat.deleteOne();
   await MessageModel.deleteMany({ chat: chatId });
 
-  emitEvent(req, REFETCH_CHATS, members);
+  emitEvent(
+    req,
+    REFETCH_CHATS,
+    members.map((i: any) => i.toString()),
+  );
 
   return res.status(200).json(new ApiResponse(200, {}, "Success"));
 });

@@ -62,14 +62,8 @@ schema.methods.generateUserToken = function () {
   } as SignOptions);
 };
 
-export const UserModel =
-  (mongoose.models.User as mongoose.Model<
-    IUser & {
-      comparePassword: (password: string) => Promise<boolean>;
-    } & mongoose.Document
-  >) ||
-  mongoose.model<
-    IUser & {
-      comparePassword: (password: string) => Promise<boolean>;
-    } & mongoose.Document
-  >("users", schema);
+export const UserModel = mongoose.model<
+  IUser & {
+    comparePassword: (password: string) => Promise<boolean>;
+  } & mongoose.Document
+>("User", schema);

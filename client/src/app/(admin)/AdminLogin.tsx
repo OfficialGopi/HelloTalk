@@ -23,12 +23,12 @@ const AdminLogin = () => {
   if (isAdmin) return <Navigate to="/admin/dashboard" />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center">
+    <div className="min-h-screen flex items-center justify-center ">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 30 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="w-full max-w-sm bg-neutral-100 dark:bg-neutral-950 shadow-xl rounded-2xl p-8"
+        className="w-full max-w-sm bg-neutral-100 dark:bg-neutral-950 shadow-xl rounded-2xl p-8 border border-neutral-500/50"
       >
         <h1 className="text-2xl font-semibold text-center text-neutral-800 dark:text-neutral-200">
           Admin Login

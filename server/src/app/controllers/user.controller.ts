@@ -119,7 +119,7 @@ const sendFriendRequest = AsyncHandler(async (req, res, next) => {
 const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
   const { requestId, accept } = req.body;
 
-  const request = await RequestModel.findById(requestId)
+  const request: any = await RequestModel.findById(requestId)
     .populate("sender", "name")
     .populate("receiver", "name");
 
@@ -153,18 +153,20 @@ const acceptFriendRequest = AsyncHandler(async (req, res, next) => {
 });
 
 const getMyNotifications = AsyncHandler(async (req, res, next) => {
-  const requests = await RequestModel.find({
+  const requests: any = await RequestModel.find({
     receiver: req.user?._id,
   }).populate("sender", "name avatar");
 
-  const allRequests = requests.map(({ _id, sender }) => ({
-    _id,
-    sender: {
-      _id: sender._id,
-      name: sender.name,
-      avatar: sender.avatar.url,
-    },
-  }));
+  const allRequests = requests.map(
+    ({ _id, sender }: { _id: string; sender: any }) => ({
+      _id,
+      sender: {
+        _id: sender._id,
+        name: sender.name,
+        avatar: sender.avatar.url,
+      },
+    }),
+  );
 
   return res.status(200).json(new ApiResponse(200, allRequests, "Success"));
 });
@@ -176,7 +178,7 @@ const getMyFriends = AsyncHandler(async (req, res, next) => {
     groupChat: false,
   }).populate("members", "name avatar");
 
-  const friends = chats.map(({ members }) => {
+  const friends = chats.map(({ members }: { members: any }) => {
     const otherUser = getOtherMember(members, req.user!);
 
     return {
@@ -190,7 +192,7 @@ const getMyFriends = AsyncHandler(async (req, res, next) => {
     const chat = await ChatModel.findById(chatId);
 
     const availableFriends = friends.filter(
-      (friend) => !chat.members.includes(friend._id),
+      (friend: any) => !chat?.members.includes(friend._id),
     );
 
     return res
