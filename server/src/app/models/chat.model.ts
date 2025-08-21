@@ -13,12 +13,12 @@ const schema = new mongoose.Schema<IChat & mongoose.Document>(
     },
     creator: {
       type: mongoose.Types.ObjectId,
-      ref: "users",
+      ref: "User",
     },
     members: [
       {
         type: mongoose.Types.ObjectId,
-        ref: "users",
+        ref: "User",
       },
     ],
   },
