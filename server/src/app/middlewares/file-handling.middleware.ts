@@ -35,12 +35,12 @@ function upload(path: string, maxSizeInMb: number): multer.Multer {
 }
 
 const uploadSingleAvatar = upload(
-  path.join(__dirname, "../../", "temp", "avatars"),
+  path.join(__dirname, "../../../", "temp", "avatars"),
   5,
 ).single("avatar");
 
 const uploadAttachments = upload(
-  path.join(__dirname, "../../", "temp", "attachments"),
+  path.join(__dirname, "../../../", "temp", "attachments"),
   10,
 ).array("files", 5);
 
