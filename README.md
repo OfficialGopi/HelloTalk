@@ -2,6 +2,8 @@
 
 A full‑stack real‑time chat application with private and group chats, file attachments, friend requests, notifications, and an admin dashboard. Built with React + Vite on the client and Node.js + Express + Socket.IO on the server, using MongoDB and Cloudinary for storage.
 
+![Logo](public/logo.png)
+
 ### Features
 
 - **Authentication**: Username/password login, HTTP‑only cookie tokens, protected routes
