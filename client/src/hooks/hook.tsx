@@ -56,7 +56,10 @@ const useAsyncMutation = (mutatationHook: any) => {
   return [executeMutation, isLoading, data];
 };
 
-const useSocketEvents = (socket: Socket, handlers: (...args: any) => any) => {
+const useSocketEvents = (
+  socket: Socket,
+  handlers: Record<string, (...args: any) => any>
+) => {
   useEffect(() => {
     Object.entries(handlers).forEach(([event, handler]) => {
       socket?.on(event, handler);

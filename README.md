@@ -1,6 +1,6 @@
 ## HelloTalk Chat App
 
-A full‑stack real‑time chat application with private and group chats, file attachments, friend requests, notifications, and an admin dashboard. Built with React + Vite on the client and Node.js + Express + Socket.IO on the server, using MongoDB and Cloudinary for storage.
+A full‑stack real‑time chat application with private and group chats, file attachments, friend requests, notifications, one‑to‑one audio and video calling (WebRTC), and an admin dashboard. Built with React + Vite on the client and Node.js + Express + Socket.IO on the server, using MongoDB and Cloudinary for storage.
 
 ![Logo](client/public/logo.png)
 
@@ -12,7 +12,7 @@ A full‑stack real‑time chat application with private and group chats, file a
 - **Attachments**: Upload multiple files per message via Cloudinary
 - **Social graph**: Search users, send/accept friend requests, notifications
 - **Admin dashboard**: View users, chats, messages, and 7‑day message chart
-- **WebRTC Communication**: Audio and video calls with real-time peer-to-peer connections
+- **WebRTC Communication**: One-to-one audio and video calls with modal UI
 - **Modern UI**: React 19, Tailwind CSS, lazy‑loaded routes, toasts, charts
 
 ### Tech Stack
@@ -20,7 +20,7 @@ A full‑stack real‑time chat application with private and group chats, file a
 - **Client**: React 19, Vite 7, Redux Toolkit + RTK Query, React Router 7, Socket.IO Client, Tailwind CSS 4, Chart.js, WebRTC
 - **Server**: Node.js, Express 5, TypeScript, Socket.IO 4, Mongoose 8, Zod, Multer, Cloudinary, Winston
 - **Database**: MongoDB (Atlas or self‑hosted)
-- **WebRTC**: Dedicated signalling server, RTCPeerConnection, MediaStreams
+- **WebRTC**: Socket.IO signalling on the same Node server, RTCPeerConnection, MediaStreams
 
 ### Monorepo Structure
 
@@ -28,7 +28,6 @@ A full‑stack real‑time chat application with private and group chats, file a
 hellotalk/
   client/                    # React app (Vite)
   server/                    # Node/Express API + Socket.IO
-  webrtc-signalling-server/  # WebRTC signalling server
   docker-compose.yml         # Local Docker setup for all services
 ```
 
@@ -177,164 +176,47 @@ Common event names (`events`):
 
 Client connects with credentials and listens/emits via a `SocketProvider`. The server authenticates sockets using the `user-token` cookie.
 
-### WebRTC Functionality
+### WebRTC (Audio/Video Calls)
 
-The application includes comprehensive WebRTC capabilities for real-time audio and video communication, powered by a dedicated signalling server.
+HelloTalk includes one-to-one audio and video calling, integrated directly into the chat UI.
 
-#### WebRTC Features
+#### User Experience
 
-- **Audio & Video Calls**: Support for both audio-only and video calls
-- **Real-time Communication**: Direct peer-to-peer connections using WebRTC
-- **Signalling Server**: Dedicated WebRTC signalling server for call coordination
-- **ICE Candidate Handling**: Automatic ICE candidate exchange for NAT traversal
-- **Media Controls**: Mute/unmute audio/video, camera switching
-- **Connection Monitoring**: Real-time connection quality and statistics
-- **Call Management**: Initiate, accept, reject, and end calls
+- Start a call from a DM chat header via the phone (audio) or video button.
+- The callee sees an accept/reject popup; on accept the call connects.
+- Calls open in a full-screen modal; you can mute/unmute and hang up.
 
-#### WebRTC Architecture
+#### Key Files
 
-```text
-Client (Browser) ←→ WebRTC Signalling Server ←→ Client (Browser)
-       ↓                                              ↓
-RTCPeerConnection                              RTCPeerConnection
-       ↓                                              ↓
-   Media Streams                              Media Streams
-```
+- Client
+  - `client/src/app/Chat.tsx` — opens call modal, listens for incoming offers
+  - `client/src/components/specific/Call.tsx` — WebRTC flow (offer/answer, ICE, media, mute, teardown)
+  - `client/src/components/ui/CallModal.tsx` — modal wrapper
+- Server
+  - `server/src/app/socket/index.ts` — signalling relay using Socket.IO
 
-#### WebRTC Class API
+#### Socket Signalling (events)
 
-The `WebRTC` class provides a comprehensive interface for managing WebRTC connections:
+- `send:offer` → `receive:offer` (payload: `{ to, offer, mode }`)
+- `send:answer` → `receive:answer` (payload: `{ to, answer }`)
+- `send-ice-candidate` → `receive-ice-candidate` (payload: `{ to, candidate }`)
+- `call:hangup` → remote `call:hangup`
+- `call:reject` → remote `call:rejected`
 
-**Core Methods:**
+#### Media Behavior
 
-- `join(userId: string)`: Connect to signalling server
-- `initiateCall(options: CallOptions)`: Start a new call
-- `acceptCall(callId, from, callType)`: Accept incoming call
-- `rejectCall(callId, from)`: Reject incoming call
-- `endCall()`: Terminate current call
+- Audio-only calls capture only microphone and render remote audio via a hidden `<audio>` element.
+- Video calls capture mic+camera; local preview and remote video are shown side-by-side.
+- Mute toggles local audio track enabled state; hang up fully tears down tracks and the peer connection.
 
-**Media Control:**
+#### NAT Traversal
 
-- `toggleAudioMute(muted: boolean)`: Mute/unmute audio
-- `toggleVideoMute(muted: boolean)`: Mute/unmute video
-- `switchCamera()`: Switch between front/back cameras
+Default ICE config includes Google STUN (`stun:stun.l.google.com:19302`). For cross-network reliability, add a TURN server in `Call.tsx` ICE servers (credentials required).
 
-**Connection Management:**
+#### Notes
 
-- `getConnectionQuality()`: Get connection state information
-- `getConnectionStats()`: Get detailed connection statistics
-- `isInCall()`: Check if currently in a call
-- `getCurrentCallInfo()`: Get current call details
-
-**Event Handling:**
-
-- `on(event, handler)`: Register event handlers
-- `off(event)`: Remove event handlers
-
-#### WebRTC Events
-
-The WebRTC class emits various events for call lifecycle management:
-
-- `onCallIncoming`: Incoming call notification
-- `onCallAccepted`: Call accepted by remote peer
-- `onCallRejected`: Call rejected by remote peer
-- `onCallEnded`: Call terminated
-- `onCallOffer`: Received call offer (SDP)
-- `onCallAnswer`: Received call answer (SDP)
-- `onIceCandidate`: Received ICE candidate
-- `onRemoteStream`: Remote media stream available
-- `onError`: Error notifications
-
-#### WebRTC Signalling Server
-
-A dedicated Node.js server handles WebRTC signalling:
-
-**Server Features:**
-
-- User session management
-- Call initiation and coordination
-- SDP offer/answer exchange
-- ICE candidate relay
-- Call state tracking
-- User availability status
-
-**Signalling Events:**
-
-- `user:join`: User connects to signalling server
-- `call:initiate`: Initiate a new call
-- `call:accept`/`call:reject`: Handle call responses
-- `call:offer`/`call:answer`: Exchange SDP information
-- `ice:candidate`: Relay ICE candidates
-- `call:end`: Terminate calls
-
-#### Configuration
-
-**Environment Variables:**
-
-```bash
-# Client (.env.local)
-VITE_WEBRTC_SIGNALLING_SERVER=http://localhost:8001
-
-# WebRTC Signalling Server (.env)
-CLIENT_URL=http://localhost:3000
-PORT=8001
-```
-
-**STUN Servers:**
-The WebRTC implementation includes multiple Google STUN servers for reliable NAT traversal:
-
-- `stun:stun.l.google.com:19302`
-- `stun:stun1.l.google.com:19302`
-- `stun:stun2.l.google.com:19302`
-- `stun:stun3.l.google.com:19302`
-- `stun:stun4.l.google.com:19302`
-
-#### Usage Example
-
-```typescript
-import WebRTC from "./lib/WebRTC";
-
-// Initialize WebRTC
-const webrtc = new WebRTC();
-
-// Set up event handlers
-webrtc.on("onCallIncoming", (data) => {
-  console.log(`Incoming ${data.callType} call from ${data.from}`);
-});
-
-webrtc.on("onRemoteStream", (stream) => {
-  // Handle remote media stream
-  remoteVideo.srcObject = stream;
-});
-
-// Join signalling server
-await webrtc.join(userId);
-
-// Initiate a video call
-const callId = await webrtc.initiateCall({
-  to: remoteUserId,
-  callType: "video",
-});
-
-// Create and send offer
-await webrtc.createOffer();
-```
-
-#### Browser Support
-
-WebRTC functionality requires modern browsers with WebRTC support:
-
-- Chrome 56+
-- Firefox 44+
-- Safari 11+
-- Edge 79+
-
-#### Security Considerations
-
-- Media access requires user permission
-- HTTPS required for production deployments
-- STUN servers are public but don't store data
-- Signalling server handles authentication via user tokens
+- No manual IDs: the callee is inferred from the current DM’s other member.
+- The socket is authenticated via the user cookie, same domain as chat.
 
 ### File Uploads
 
