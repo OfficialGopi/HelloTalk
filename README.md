@@ -1,6 +1,6 @@
 ## HelloTalk Chat App
 
-A full‑stack real‑time chat application with private and group chats, file attachments, friend requests, notifications, and an admin dashboard. Built with React + Vite on the client and Node.js + Express + Socket.IO on the server, using MongoDB and Cloudinary for storage.
+A full‑stack real‑time chat application with private and group chats, file attachments, friend requests, notifications, one‑to‑one audio and video calling (WebRTC), and an admin dashboard. Built with React + Vite on the client and Node.js + Express + Socket.IO on the server, using MongoDB and Cloudinary for storage.
 
 ![Logo](client/public/logo.png)
 
@@ -12,21 +12,23 @@ A full‑stack real‑time chat application with private and group chats, file a
 - **Attachments**: Upload multiple files per message via Cloudinary
 - **Social graph**: Search users, send/accept friend requests, notifications
 - **Admin dashboard**: View users, chats, messages, and 7‑day message chart
+- **WebRTC Communication**: One-to-one audio and video calls with modal UI
 - **Modern UI**: React 19, Tailwind CSS, lazy‑loaded routes, toasts, charts
 
 ### Tech Stack
 
-- **Client**: React 19, Vite 7, Redux Toolkit + RTK Query, React Router 7, Socket.IO Client, Tailwind CSS 4, Chart.js
+- **Client**: React 19, Vite 7, Redux Toolkit + RTK Query, React Router 7, Socket.IO Client, Tailwind CSS 4, Chart.js, WebRTC
 - **Server**: Node.js, Express 5, TypeScript, Socket.IO 4, Mongoose 8, Zod, Multer, Cloudinary, Winston
 - **Database**: MongoDB (Atlas or self‑hosted)
+- **WebRTC**: Socket.IO signalling on the same Node server, RTCPeerConnection, MediaStreams
 
 ### Monorepo Structure
 
 ```text
 hellotalk/
-  client/              # React app (Vite)
-  server/              # Node/Express API + Socket.IO
-  docker-compose.yml   # Local Docker setup for both services
+  client/                    # React app (Vite)
+  server/                    # Node/Express API + Socket.IO
+  docker-compose.yml         # Local Docker setup for all services
 ```
 
 ### Environment Variables
@@ -60,7 +62,7 @@ Note: Cookies are configured with `secure: true` and `sameSite: "none"`. For loc
 
 ### Install & Run (Local)
 
-Open two terminals (one for server, one for client):
+Open three terminals (one for each service):
 
 Server
 
@@ -78,10 +80,19 @@ npm i
 npm run dev
 ```
 
+WebRTC Signalling Server
+
+```bash
+cd webrtc-signalling-server
+npm i
+npm run dev
+```
+
 Default ports
 
 - Client: `http://localhost:3000`
 - Server: `http://localhost:8080`
+- WebRTC Signalling Server: `http://localhost:8001`
 
 ### Docker (Optional)
 
@@ -164,6 +175,48 @@ Common event names (`events`):
 - `ALERT`, `REFETCH_CHATS`, `NEW_ATTACHMENT`, `NEW_REQUEST`
 
 Client connects with credentials and listens/emits via a `SocketProvider`. The server authenticates sockets using the `user-token` cookie.
+
+### WebRTC (Audio/Video Calls)
+
+HelloTalk includes one-to-one audio and video calling, integrated directly into the chat UI.
+
+#### User Experience
+
+- Start a call from a DM chat header via the phone (audio) or video button.
+- The callee sees an accept/reject popup; on accept the call connects.
+- Calls open in a full-screen modal; you can mute/unmute and hang up.
+
+#### Key Files
+
+- Client
+  - `client/src/app/Chat.tsx` — opens call modal, listens for incoming offers
+  - `client/src/components/specific/Call.tsx` — WebRTC flow (offer/answer, ICE, media, mute, teardown)
+  - `client/src/components/ui/CallModal.tsx` — modal wrapper
+- Server
+  - `server/src/app/socket/index.ts` — signalling relay using Socket.IO
+
+#### Socket Signalling (events)
+
+- `send:offer` → `receive:offer` (payload: `{ to, offer, mode }`)
+- `send:answer` → `receive:answer` (payload: `{ to, answer }`)
+- `send-ice-candidate` → `receive-ice-candidate` (payload: `{ to, candidate }`)
+- `call:hangup` → remote `call:hangup`
+- `call:reject` → remote `call:rejected`
+
+#### Media Behavior
+
+- Audio-only calls capture only microphone and render remote audio via a hidden `<audio>` element.
+- Video calls capture mic+camera; local preview and remote video are shown side-by-side.
+- Mute toggles local audio track enabled state; hang up fully tears down tracks and the peer connection.
+
+#### NAT Traversal
+
+Default ICE config includes Google STUN (`stun:stun.l.google.com:19302`). For cross-network reliability, add a TURN server in `Call.tsx` ICE servers (credentials required).
+
+#### Notes
+
+- No manual IDs: the callee is inferred from the current DM’s other member.
+- The socket is authenticated via the user cookie, same domain as chat.
 
 ### File Uploads
 

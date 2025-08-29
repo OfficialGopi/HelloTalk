@@ -6,7 +6,7 @@ import { connectDb } from "./db";
 import { Server, Socket } from "socket.io";
 
 import app from "./app";
-import { socketOnConection } from "./app/socket";
+import { initWebRTCSignallingServer, socketOnConection } from "./app/socket";
 import { corsOptions } from "./app/constants/cors.constant";
 import { socketAuthenticator } from "./app/socket/socket.middleware";
 
@@ -19,7 +19,10 @@ async function main(app: Application) {
   });
   app.set("io", io);
   io.use(socketAuthenticator);
-  io.on("connection", socketOnConection(io));
+  io.on("connection", (socket) => {
+    socketOnConection(io)(socket);
+    initWebRTCSignallingServer(socket);
+  });
   server
     .listen(env.PORT)
     .on("listening", () => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 const useErrors = (errors = []) => {
@@ -55,7 +56,10 @@ const useAsyncMutation = (mutatationHook: any) => {
   return [executeMutation, isLoading, data];
 };
 
-const useSocketEvents = (socket: any, handlers: any) => {
+const useSocketEvents = (
+  socket: Socket,
+  handlers: Record<string, (...args: any) => any>
+) => {
   useEffect(() => {
     Object.entries(handlers).forEach(([event, handler]) => {
       socket?.on(event, handler);

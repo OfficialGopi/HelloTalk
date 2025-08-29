@@ -16,6 +16,8 @@ import { TypingLoader } from "@/components/loaders/Loaders";
 import { useNavigate } from "react-router-dom";
 import AutoResizeTextarea from "@/components/ui/AutoResizeTextArea";
 import AvatarCard from "@/components/shared/AvatarCard";
+import Modal from "@/components/ui/CallModal";
+import Call from "@/components/specific/Call";
 
 const {
   ALERT,
@@ -46,12 +48,22 @@ const Chat = ({
   const [messages, setMessages] = useState<any[]>([]);
   const [page, setPage] = useState(1);
 
+  const [isCallOpen, setIsCallOpen] = useState(false);
+  const [callMode, setCallMode] = useState<"audio" | "video">("audio");
+  const [incomingOffer, setIncomingOffer] =
+    useState<RTCSessionDescriptionInit | null>(null);
+  const [incomingCallerId, setIncomingCallerId] = useState<string | null>(null);
+
   const [IamTyping, setIamTyping] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
   const typingTimeout = useRef<any>(null);
   const { isFileMenu } = useSelector((state: any) => state.misc);
 
-  const chatDetails = useChatDetailsQuery({ chatId, skip: !chatId });
+  const chatDetails = useChatDetailsQuery({
+    chatId,
+    populate: true,
+    skip: !chatId,
+  });
   const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
 
   const { data: oldMessages, setData: setOldMessages } = useInfiniteScrollTop(
@@ -68,6 +80,15 @@ const Chat = ({
   ];
 
   const members = chatDetails?.data?.data?.members;
+  const otherMemberEntry = Array.isArray(members)
+    ? members.find((m: any) =>
+        typeof m === "string" ? m !== user._id : m?._id !== user._id
+      )
+    : null;
+  const resolvedCalleeId =
+    typeof otherMemberEntry === "string"
+      ? otherMemberEntry
+      : otherMemberEntry?._id || null;
 
   const messageOnChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
@@ -159,7 +180,7 @@ const Chat = ({
     [chatId]
   );
 
-  const eventHandler = {
+  const eventHandler: Record<string, (...args: any) => any> = {
     [ALERT]: alertListener,
     [NEW_MESSAGE]: newMessagesListener,
     [START_TYPING]: startTypingListener,
@@ -168,6 +189,30 @@ const Chat = ({
 
   useSocketEvents(socket, eventHandler);
   useErrors(errors as any);
+
+  // Open call modal on incoming offer (accept/reject popup)
+  useEffect(() => {
+    const offerListener = ({
+      offer,
+      from,
+      mode,
+    }: {
+      offer: RTCSessionDescriptionInit;
+      from: string;
+      mode?: "audio" | "video";
+    }) => {
+      setIncomingOffer(offer);
+      setIncomingCallerId(from);
+      setCallMode(mode || "audio");
+      setIsCallOpen(true);
+    };
+    // Ensure we only have a single listener (avoid duplicates across modal mounts)
+    socket?.off("receive:offer");
+    socket?.on("receive:offer", offerListener);
+    return () => {
+      socket?.off("receive:offer", offerListener);
+    };
+  }, [socket]);
 
   const allMessages = [...oldMessages, ...messages];
 
@@ -182,10 +227,28 @@ const Chat = ({
         </div>
         {!chat?.groupChat && (
           <div className="flex gap-2 items-center">
-            <button className="p-1 hover:cursor-pointer dark:text-neutral-100">
+            <button
+              className="p-1 hover:cursor-pointer dark:text-neutral-100"
+              onClick={() => {
+                setCallMode("audio");
+                setIncomingOffer(null);
+                setIncomingCallerId(null);
+                setIsCallOpen(true);
+              }}
+              disabled={!resolvedCalleeId}
+            >
               <PhoneCall />
             </button>
-            <button className="p-1 hover:cursor-pointer dark:text-neutral-100">
+            <button
+              className="p-1 hover:cursor-pointer dark:text-neutral-100"
+              onClick={() => {
+                setCallMode("video");
+                setIncomingOffer(null);
+                setIncomingCallerId(null);
+                setIsCallOpen(true);
+              }}
+              disabled={!resolvedCalleeId}
+            >
               <Video />
             </button>
           </div>
@@ -238,6 +301,27 @@ const Chat = ({
           </button>
         </div>
       </form>
+      <Modal
+        isOpen={isCallOpen}
+        onClose={() => {
+          setIsCallOpen(false);
+          setIncomingOffer(null);
+          setIncomingCallerId(null);
+        }}
+      >
+        <Call
+          calleeId={resolvedCalleeId}
+          callerId={incomingCallerId}
+          mode={callMode}
+          isOutgoing={!incomingOffer}
+          initialOffer={incomingOffer}
+          onClose={() => {
+            setIsCallOpen(false);
+            setIncomingOffer(null);
+            setIncomingCallerId(null);
+          }}
+        />
+      </Modal>
     </div>
   );
 };
