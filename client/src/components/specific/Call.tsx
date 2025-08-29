@@ -4,12 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Types for socket events
-type OfferPayload = {
-  offer: RTCSessionDescriptionInit;
-  from: string;
-};
-
 type AnswerPayload = {
   answer: RTCSessionDescriptionInit;
 };
